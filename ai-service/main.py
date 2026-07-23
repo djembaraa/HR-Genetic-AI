@@ -82,7 +82,7 @@ async def chat_with_agent(query: str = Form(...)):
         
         # Check if DB exists
         if not os.path.exists("./chroma_db"):
-             return {"reply": "Maaf, database CV masih kosong. Silakan upload CV terlebih dahulu."}
+             return {"reply": "Sorry, the CV database is empty. Please upload a CV first."}
              
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
@@ -97,7 +97,7 @@ async def chat_with_agent(query: str = Form(...)):
         
         # 3. Setup Agent Prompt
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in Indonesian."),
+            ("system", "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."),
             ("human", "{input}"),
             ("placeholder", "{agent_scratchpad}"),
         ])
