@@ -40,12 +40,12 @@ Dokumen ini berfungsi sebagai peta jalan (*roadmap*) utama untuk menjaga konsist
 
 ---
 
-## 🟡 Phase 5: Frontend UI/UX (React)
+## 🟢 Phase 5: Frontend UI/UX (React) (Selesai)
 **Fokus:** Membangun antarmuka yang memukau dan konsisten.
-- [ ] Setup CSS dasar sesuai *Gestalt Principles* (Warna Teal, Gradient, Glassmorphism).
-- [ ] Membangun **Landing Page** (Formulir pendaftaran dan upload CV untuk kandidat).
-- [ ] Membangun **HR Dashboard** (Daftar pelamar dan antarmuka Chatbot AI).
-- [ ] Mengintegrasikan React dengan API Express (Fungsi Upload & Chat).
+- [x] Setup CSS dasar sesuai *Gestalt Principles* (Warna Teal, Gradient, Glassmorphism).
+- [x] Membangun **Landing Page** (Formulir pendaftaran dan upload CV untuk kandidat).
+- [x] Membangun **HR Dashboard** (Daftar pelamar dan antarmuka Chatbot AI).
+- [x] Mengintegrasikan React dengan API Express (Fungsi Upload & Chat).
 
 ---
 
