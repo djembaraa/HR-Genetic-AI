@@ -31,12 +31,12 @@ Dokumen ini berfungsi sebagai peta jalan (*roadmap*) utama untuk menjaga konsist
 
 ---
 
-## 🟡 Phase 4: Agentic Workflow & Chat (Python -> Node)
+## 🟢 Phase 4: Agentic Workflow & Chat (Python -> Node) (Selesai)
 **Fokus:** Membuat *chatbot* pintar untuk HRD.
-- [ ] Membuat *Retriever Tool* di Langchain untuk mencari CV di ChromaDB.
-- [ ] Membuat AI Agent dengan *System Prompt* khusus HRD.
-- [ ] Membuat Endpoint `/api/chat` di FastAPI.
-- [ ] Menghubungkan endpoint *chat* Express ke FastAPI.
+- [x] Membuat *Retriever Tool* di Langchain untuk mencari CV di ChromaDB.
+- [x] Membuat AI Agent dengan *System Prompt* khusus HRD.
+- [x] Membuat Endpoint `/api/chat` di FastAPI.
+- [x] Menghubungkan endpoint *chat* Express ke FastAPI.
 
 ---
 

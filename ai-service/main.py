@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain.tools.retriever import create_retriever_tool
+from langchain.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
 
@@ -72,9 +75,43 @@ async def chat_with_agent(query: str = Form(...)):
     """
     Chat endpoint for HR to ask questions about the candidates using RAG agent.
     """
-    # TODO: Add LangChain Agent Logic here
-    
-    return {"reply": f"ECHO: I will eventually answer '{query}' using RAG."}
+    try:
+        # 1. Setup LLM and Vector Store
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        
+        # Check if DB exists
+        if not os.path.exists("./chroma_db"):
+             return {"reply": "Maaf, database CV masih kosong. Silakan upload CV terlebih dahulu."}
+             
+        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+        
+        # 2. Create Retriever Tool
+        tool = create_retriever_tool(
+            retriever,
+            "search_candidate_cv",
+            "Searches and returns excerpts from candidate CVs. Always use this tool when asked about candidates, their skills, or experiences."
+        )
+        tools = [tool]
+        
+        # 3. Setup Agent Prompt
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in Indonesian."),
+            ("human", "{input}"),
+            ("placeholder", "{agent_scratchpad}"),
+        ])
+        
+        # 4. Create and run Agent
+        agent = create_tool_calling_agent(llm, tools, prompt)
+        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+        
+        response = agent_executor.invoke({"input": query})
+        
+        return {"reply": response["output"]}
+    except Exception as e:
+        print(f"Agent Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
