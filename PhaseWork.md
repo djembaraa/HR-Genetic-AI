@@ -49,8 +49,8 @@ Dokumen ini berfungsi sebagai peta jalan (*roadmap*) utama untuk menjaga konsist
 
 ---
 
-## 🟡 Phase 6: End-to-End Testing & Polish
+## 🟢 Phase 6: End-to-End Testing & Polish (Selesai)
 **Fokus:** Memastikan semuanya berjalan mulus dari ujung ke ujung.
-- [ ] Skenario Uji: Upload CV -> Proses AI -> Tanya AI tentang CV tersebut.
-- [ ] Menambahkan *loading state* dan *error handling* (misal jika API Gemini sedang *down*).
-- [ ] *Code refactoring* dan persiapan dokumentasi akhir untuk presentasi portofolio.
+- [x] Skenario Uji: Upload CV -> Proses AI -> Tanya AI tentang CV tersebut.
+- [x] Menambahkan *loading state* dan *error handling* (misal jika API Gemini sedang *down*).
+- [x] *Code refactoring* dan persiapan dokumentasi akhir untuk presentasi portofolio.
