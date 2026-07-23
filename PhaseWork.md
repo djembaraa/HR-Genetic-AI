@@ -21,13 +21,13 @@ Dokumen ini berfungsi sebagai peta jalan (*roadmap*) utama untuk menjaga konsist
 
 ---
 
-## 🟡 Phase 3: AI Microservice - RAG Pipeline (Python)
+## 🟢 Phase 3: AI Microservice - RAG Pipeline (Python) (Selesai)
 **Fokus:** Membuat sistem yang bisa membaca dan memahami CV.
-- [ ] Konfigurasi `google-generativeai` dan API Key.
-- [ ] Membuat Endpoint FastAPI `/api/process-cv`.
-- [ ] Menggunakan `PyPDFLoader` untuk mengekstrak teks dari PDF.
-- [ ] Memecah teks dengan `RecursiveCharacterTextSplitter`.
-- [ ] Menghasilkan *Embeddings* dan menyimpannya ke **ChromaDB**.
+- [x] Konfigurasi `google-generativeai` dan API Key.
+- [x] Membuat Endpoint FastAPI `/api/process-cv`.
+- [x] Menggunakan `PyPDFLoader` untuk mengekstrak teks dari PDF.
+- [x] Memecah teks dengan `RecursiveCharacterTextSplitter`.
+- [x] Menghasilkan *Embeddings* dan menyimpannya ke **ChromaDB**.
 
 ---
 
