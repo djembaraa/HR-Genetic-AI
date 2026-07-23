@@ -12,12 +12,12 @@ Dokumen ini berfungsi sebagai peta jalan (*roadmap*) utama untuk menjaga konsist
 
 ---
 
-## 🟡 Phase 2: Relational Database & Gateway (Node.js)
+## 🟢 Phase 2: Relational Database & Gateway (Node.js) (Selesai)
 **Fokus:** Membangun *backend* utama untuk manajemen data dasar.
-- [ ] Menyusun Skema Prisma (`Candidate` dan `Job`).
-- [ ] Migrasi Database SQLite.
-- [ ] Membuat Endpoint `/api/candidates/upload` menggunakan Multer untuk menerima file PDF.
-- [ ] Menulis logika penerusan ( *forwarding* ) file PDF dari Express ke FastAPI.
+- [x] Menyusun Skema Prisma (`Candidate` dan `Job`).
+- [x] Migrasi Database SQLite.
+- [x] Membuat Endpoint `/api/candidates/upload` menggunakan Multer untuk menerima file PDF.
+- [x] Menulis logika penerusan ( *forwarding* ) file PDF dari Express ke FastAPI.
 
 ---
 

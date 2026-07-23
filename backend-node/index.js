@@ -42,19 +42,14 @@ app.post('/api/candidates/upload', upload.single('cv'), async (req, res) => {
         }
 
         // 1. Save candidate to Database (SQLite via Prisma)
-        // Note: For now we mock the DB save if Prisma schema isn't fully set up yet.
-        // Uncomment once DB is migrated:
-        /*
         const candidate = await prisma.candidate.create({
             data: {
                 name,
                 email,
-                applied_job_id: applied_job_id ? parseInt(applied_job_id) : null,
-                cv_url: req.file.path
+                appliedJobId: applied_job_id ? parseInt(applied_job_id) : null,
+                cvUrl: req.file.path
             }
         });
-        */
-        const candidate = { id: Date.now().toString(), name, email }; // Mock ID
 
         // 2. Forward the PDF to the AI Microservice (FastAPI) for processing
         const formData = new FormData();
