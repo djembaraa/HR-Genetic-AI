@@ -1,0 +1,5 @@
+node_modules/
+.env
+ai-service/venv/
+ai-service/__pycache__/
+backend-node/uploads/
