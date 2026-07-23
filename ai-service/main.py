@@ -2,6 +2,13 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import shutil
+from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+load_dotenv()
 
 app = FastAPI(title="AI ATS Service")
 
@@ -34,7 +41,29 @@ async def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
-    # TODO: Add LangChain DocumentLoader, TextSplitter, and ChromaDB insertion here
+    try:
+        # 1. Extract text from PDF
+        loader = PyPDFLoader(file_path)
+        docs = loader.load()
+        
+        # 2. Chunk text
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
+        
+        # Add candidate_id to metadata
+        for split in splits:
+            split.metadata["candidate_id"] = candidate_id
+            
+        # 3. Create Embeddings and Store in ChromaDB
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        vectorstore = Chroma.from_documents(
+            documents=splits, 
+            embedding=embeddings, 
+            persist_directory="./chroma_db"
+        )
+    except Exception as e:
+        print(f"Error processing CV: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
     
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
