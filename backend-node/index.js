@@ -8,12 +8,32 @@ const { PrismaLibSql } = require('@prisma/adapter-libsql');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-
 const app = express();
 const connection = createClient({ url: process.env.DATABASE_URL });
 const adapter = new PrismaLibSql(connection);
 const prisma = new PrismaClient({ adapter });
+
+app.use(cors());
+app.use(express.json()); // Essential for receiving JSON in req.body
+
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
+// JWT Middleware for Protected Routes
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+
+  const jwt = require('jsonwebtoken');
+  const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
 
 // Setup Multer for handling file uploads (PDF)
 const uploadDir = path.join(__dirname, 'uploads');
@@ -45,6 +65,20 @@ const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
 app.get('/', (req, res) => {
     res.send({ message: 'NextGen ATS Express Gateway is running!' });
+});
+
+// Example of a Protected Route (Admin Only)
+app.get('/api/admin/dashboard', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin access required' });
+  
+  // Dashboard mock stats
+  res.json({
+    message: `Welcome Admin ${req.user.email}`,
+    stats: {
+      candidates: await prisma.candidate.count(),
+      jobs: await prisma.job.count()
+    }
+  });
 });
 
 // Endpoint to handle Candidate CV Upload

@@ -24,3 +24,12 @@ model Candidate {
   appliedJob    Job?     @relation(fields: [appliedJobId], references: [id])
   createdAt     DateTime @default(now())
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("CANDIDATE") // "ADMIN" or "CANDIDATE"
+  createdAt DateTime @default(now())
+}
+

@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-export const Navbar = ({ setView }) => {
+export const Navbar = () => {
   return (
     <nav className="navbar" style={{
       position: 'fixed',
@@ -19,14 +20,11 @@ export const Navbar = ({ setView }) => {
         Wiratek AI
       </div>
       <ul className="nav-links" style={{ display: 'flex', gap: '2rem', listStyle: 'none' }}>
-        <li><a href="#home" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a></li>
-        <li><a href="#features" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Features</a></li>
-        <li><a href="#about" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>About Us</a></li>
+        <li><a href="#home" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a></li>
+        <li><a href="#features" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Features</a></li>
+        <li><a href="#about" style={{ color: 'var(--text-light)', textDecoration: 'none' }}>About Us</a></li>
         <li>
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            setView('dashboard');
-          }} style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Dashboard ATS</a>
+          <Link to="/login" style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Dashboard ATS</Link>
         </li>
       </ul>
     </nav>
