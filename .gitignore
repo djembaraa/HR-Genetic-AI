@@ -3,3 +3,6 @@ node_modules/
 ai-service/venv/
 ai-service/__pycache__/
 backend-node/uploads/
+backend-node/dev.db
+backend-node/dev.db-journal
+ai-service/chroma_db/

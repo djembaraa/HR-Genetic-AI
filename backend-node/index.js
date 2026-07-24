@@ -20,7 +20,17 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
 });
-const upload = multer({ storage });
+const upload = multer({ 
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only PDF is allowed.'), false);
+        }
+    }
+});
 
 app.use(cors());
 app.use(express.json());
