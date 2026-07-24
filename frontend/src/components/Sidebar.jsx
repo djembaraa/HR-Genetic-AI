@@ -22,7 +22,7 @@ export const Sidebar = () => {
   return (
     <div className="w-[260px] h-screen bg-white border-r border-border fixed flex flex-col p-6 z-40">
       <div className="text-2xl font-bold text-primary mb-8 px-2">
-        HR Genetic AI
+        NexHire AI
       </div>
 
       <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-4 px-2">

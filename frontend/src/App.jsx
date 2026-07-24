@@ -33,7 +33,7 @@ const LandingPage = () => (
             Recruit Top Talent<br/>with AI Power.
           </h1>
           <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-            HR Genetic AI Applicant Tracking System screens, summarizes, and finds ideal candidates instantly based on their CVs using Generative AI (RAG).
+            NexHire AI Applicant Tracking System screens, summarizes, and finds ideal candidates instantly based on their CVs using Generative AI (RAG).
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <Button size="lg" onClick={() => document.getElementById('upload-section').scrollIntoView()}>
@@ -99,10 +99,10 @@ const LandingPage = () => (
           <UploadForm />
         </div>
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6">Why HR Genetic AI?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6">Why NexHire AI?</h2>
           <div className="space-y-6 text-lg text-text-secondary leading-relaxed">
             <p>
-              We believe that HR professionals spend too much time manually reading resumes. HR Genetic AI uses Google Gemini and LangGraph to automate the initial screening process.
+              We believe that HR professionals spend too much time manually reading resumes. NexHire AI uses Google Gemini and LangGraph to automate the initial screening process.
             </p>
             <p>
               Our microservices architecture (React + Node.js + FastAPI) is built for scale, providing a seamless, secure, and highly responsive experience for both recruiters and candidates.
