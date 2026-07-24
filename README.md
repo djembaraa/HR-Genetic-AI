@@ -1,6 +1,6 @@
-# HR Genetic AI
+# NexHire AI
 
-HR Genetic AI is an enterprise-grade, dual-sided Applicant Tracking System (ATS) and Career Portal powered by Retrieval-Augmented Generation (RAG) and Agentic Workflow algorithms. The platform autonomously screens resumes, optimizes candidate profiles, and provides a conversational AI assistant for Human Resources professionals to query applicant data with precision.
+NexHire AI is an enterprise-grade, dual-sided Applicant Tracking System (ATS) and Career Portal powered by Retrieval-Augmented Generation (RAG) and Agentic Workflow algorithms. The platform autonomously screens resumes, optimizes candidate profiles, and provides a conversational AI assistant for Human Resources professionals to query applicant data with precision.
 
 ## Core Capabilities
 
@@ -77,27 +77,19 @@ The application implements a distributed microservices architecture to ensure hi
 
 ### Running the Application
 
-To run the application locally, start all three services in separate terminal instances.
+To run the application locally, you can start all three services simultaneously from the root directory using the `concurrently` package.
 
-**Terminal 1 (AI Service):**
-```bash
-cd ai-service
-python main.py
-```
+1. **Install root dependencies:**
+   ```bash
+   npm install
+   ```
 
-**Terminal 2 (API Gateway):**
-```bash
-cd backend-node
-node index.js
-```
+2. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
 
-**Terminal 3 (Frontend):**
-```bash
-cd frontend
-npm run dev
-```
-
-The application will be accessible at `http://localhost:5173`.
+The application will boot up the API Gateway, AI Service, and Frontend concurrently. The client interface will be accessible at `http://localhost:5173`.
 
 ---
 *© 2026 Djembar Arafat. All Rights Reserved.*
