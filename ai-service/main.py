@@ -59,14 +59,14 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
             
         # 3. Create Embeddings and Store in ChromaDB
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        vectorstore = Chroma.from_documents(
-            documents=splits, 
-            embedding=embeddings, 
-            persist_directory="./chroma_db"
-        )
+        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        vectorstore.add_documents(documents=splits)
     except Exception as e:
         print(f"Error processing CV: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
     
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 

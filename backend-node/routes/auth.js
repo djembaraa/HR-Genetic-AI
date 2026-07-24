@@ -2,13 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Using the same Prisma setup as index.js
-const { PrismaClient } = require('@prisma/client');
-const { createClient } = require('@libsql/client');
-const { PrismaLibSql } = require('@prisma/adapter-libsql');
-const connection = createClient({ url: process.env.DATABASE_URL || 'file:./dev.db' });
-const adapter = new PrismaLibSql(connection);
-const prisma = new PrismaClient({ adapter });
+const prisma = require('../lib/prisma');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';

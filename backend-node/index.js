@@ -2,16 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { PrismaClient } = require('@prisma/client');
-const { createClient } = require('@libsql/client');
-const { PrismaLibSql } = require('@prisma/adapter-libsql');
+const prisma = require('./lib/prisma');
+const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
+
 const app = express();
-const connection = createClient({ url: process.env.DATABASE_URL });
-const adapter = new PrismaLibSql(connection);
-const prisma = new PrismaClient({ adapter });
 
 app.use(cors());
 app.use(express.json()); // Essential for receiving JSON in req.body
@@ -25,7 +22,6 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
   if (token == null) return res.sendStatus(401);
 
-  const jwt = require('jsonwebtoken');
   const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
   
   jwt.verify(token, JWT_SECRET, (err, user) => {
@@ -57,8 +53,6 @@ const upload = multer({
     }
 });
 
-app.use(cors());
-app.use(express.json());
 
 // FASTAPI SERVICE URL
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
