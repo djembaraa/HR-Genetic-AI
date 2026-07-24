@@ -6,32 +6,32 @@
 
 ---
 
-## 1. Pendahuluan
-Dokumen ini adalah **Master Index** dari seluruh dokumentasi *Single Source of Truth* (SOT) untuk project **HR Genetic AI**. Proyek ini adalah platform SaaS B2B (untuk HRD/Rekruter) sekaligus Portal B2C (untuk Kandidat Pencari Kerja).
+## 1. Introduction
+This document serves as the **Master Index** for all *Single Source of Truth* (SOT) documentation for the **HR Genetic AI** project. This project is a dual-sided platform: a B2B SaaS for HR/Recruiters and a B2C Portal for Job Seekers.
 
-Semua pengembangan, perubahan arsitektur, dan penulisan kode **wajib** merujuk pada dokumen-dokumen di bawah ini agar sistem tetap konsisten dan berstandar industri.
+All development, architectural changes, and codebase implementations **must** refer to the documents below to ensure system consistency and adherence to industry standards.
 
-## 2. Dokumen SOT Utama
+## 2. Core SOT Documents
 
 ### 📘 [WORKFLOW.md](./WORKFLOW.md)
-Berisi arsitektur sistem secara keseluruhan (Topologi Node.js & Python), 6 alur data (*pipeline*) utama (mulai dari upload CV hingga RAG Chat), dan peta jalan (*roadmap*) eksekusi 4 fase. Dokumen ini juga memuat standarisasi operasi *Enterprise* (DLQ, Redis, CI/CD, Sentry).
+Contains the overall system architecture (Node.js & Python topology), 6 core data pipelines (from CV upload to RAG Chat), and the 4-phase execution roadmap. It also outlines Enterprise operations standards (DLQ, Redis, CI/CD, Sentry).
 
 ### 📘 [DB-Relations.md](./DB-Relations.md)
-Berisi skema database relasional (PostgreSQL) yang menggunakan Prisma ORM. Mencakup implementasi isolasi *Multi-Tenant* (`companyId`), tabel resume terstruktur (Pengalaman, Pendidikan, Skil), dan aturan integritas data (*Cascade rules*).
+Contains the relational database schema (PostgreSQL) using Prisma ORM. It covers the implementation of Multi-Tenant isolation (`companyId`), structured resume tables (Experience, Education, Skills), and data integrity rules (Cascade rules).
 
 ### 📘 [SECURITY.md](./SECURITY.md)
-Berisi protokol keamanan ketat, termasuk manajemen JWT (*Access & Refresh Tokens*), *Role-Based Access Control* (ADMIN, HR_MANAGER, RECRUITER, CANDIDATE), validasi input menggunakan Zod, serta mitigasi celah keamanan standar OWASP.
+Contains strict security protocols, including JWT management (Access & Refresh Tokens), Role-Based Access Control (ADMIN, HR_MANAGER, RECRUITER, CANDIDATE), input validation via Zod, and standard OWASP vulnerability mitigations.
 
 ### 📘 [UIUX.md](./UIUX.md)
-Berisi sistem desain (warna, tipografi, spasi) yang diekstrak dari referensi visual berkualitas tinggi. Mencakup pedoman pemotongan layout (*responsive slicing*), standarisasi ikon (`lucide-react`), dan arsitektur CSS (BEM).
+Contains the design system (colors, typography, spacing) extracted from high-quality visual references. It includes guidelines for responsive layout slicing, icon standardization (`lucide-react`), and CSS architecture (BEM).
 
 ---
 
-## 3. Aturan Emas Pengembangan (*Golden Rules*)
-1. **Tidak Ada Emoji:** Antarmuka dilarang menggunakan karakter emoji. Selalu gunakan pustaka ikon `lucide-react`.
-2. **Keamanan Ekstra:** Semua rute sensitif (`/api/admin`, `/api/hr`) wajib dilindungi oleh *middleware* JWT dan verifikasi peran.
-3. **Isolasi Data (Multi-Tenant):** Data pelamar dan lowongan tidak boleh bocor antar perusahaan. Semua *query* wajib menyertakan filter `companyId`.
-4. **Resiliensi AI:** Proses vektorisasi dan API LLM Gemini harus dibungkus dengan *error handling* dan mekanisme antrian (*Queue*) agar tidak memblokir respon *server* utama.
+## 3. Golden Rules of Development
+1. **No Emojis:** The user interface must strictly avoid emoji characters. Always use the `lucide-react` icon library.
+2. **Strict Security:** All sensitive routes (`/api/admin`, `/api/hr`) must be protected by JWT middleware and role verification.
+3. **Data Isolation (Multi-Tenant):** Candidate and job data must never leak across companies. All queries must include a `companyId` filter.
+4. **AI Resilience:** Vectorization processes and Gemini LLM API calls must be wrapped with error handling and queued (via BullMQ) to prevent blocking the main server responses.
 
 ---
 *© 2026 Djembar Arafat. All Rights Reserved.*

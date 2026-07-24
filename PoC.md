@@ -6,29 +6,29 @@
 
 ---
 
-## 1. Tujuan Utama (Objective)
-Membuktikan bahwa arsitektur sistem skala *Enterprise* dengan PostgreSQL (Prisma) mampu menangani dua sisi pengguna sekaligus secara terisolasi (B2B HRD dan B2C Kandidat), serta menunjukkan kemampuan AI Gemini dalam membaca, mengoptimalkan, dan mencari kandidat tanpa *hallucinations*.
+## 1. Primary Objective
+To prove that an Enterprise-scale system architecture utilizing PostgreSQL (Prisma) can handle two isolated user domains simultaneously (B2B HR and B2C Candidates), while demonstrating the Gemini AI's ability to accurately read, optimize, and search candidates without hallucinations.
 
-## 2. Ruang Lingkup PoC (Core Features for PoC)
+## 2. Core Features for PoC
 
-### A. Sisi B2B (HRD & Rekruter)
-1. **Keamanan & Multi-Tenancy:** HRD hanya bisa melihat data milik perusahaannya sendiri (`companyId`).
-2. **AI RAG Assistant (Chatbot):** HRD dapat bertanya kepada chatbot (misal: *"Siapa kandidat yang jago React?"*), dan AI akan merespon dengan data kandidat yang relevan dari Vector Database (ChromaDB), lengkap dengan memori percakapan.
+### A. B2B Side (HR & Recruiters)
+1. **Security & Multi-Tenancy:** HR users can only view data belonging to their own company (`companyId`).
+2. **AI RAG Assistant (Chatbot):** HR users can query the chatbot (e.g., *"Who is the best fit for Frontend?"*), and the AI will respond with relevant candidate data retrieved from the Vector Database (ChromaDB), maintaining conversational memory.
 
-### B. Sisi B2C (Pencari Kerja)
-1. **Structured Resume Builder:** Kandidat dapat membuat profil terstruktur (Pengalaman, Pendidikan, Skil) yang disimpan di PostgreSQL.
-2. **AI ATS Enhancement:** Kandidat dapat meminta AI untuk menyempurnakan teks pengalaman kerjanya menjadi lebih formal dan berstandar ATS (fitur *Human-in-the-Loop*).
-3. **Database-to-Vector Pipeline:** Saat kandidat mempublikasikan profilnya, sistem dapat menarik teks dari database (bukan parsing PDF) untuk dikirim ke ChromaDB secara *asynchronous*.
+### B. B2C Side (Job Seekers)
+1. **Structured Resume Builder:** Candidates can create structured profiles (Experience, Education, Skills) stored in PostgreSQL.
+2. **AI ATS Enhancement:** Candidates can request the AI to refine their work experience text into formal, ATS-compliant bullet points (Human-in-the-Loop feature).
+3. **Database-to-Vector Pipeline:** When a candidate publishes their profile, the system extracts text directly from the database (bypassing PDF parsing) and sends it to ChromaDB asynchronously.
 
-## 3. Kriteria Keberhasilan (Success Criteria)
-- **Data Integrity:** PostgreSQL berhasil memisahkan data antar perusahaan dengan sempurna (tidak ada kebocoran data pelamar).
-- **Security:** Login dan registrasi dilindungi oleh JWT (Access & Refresh token), dan pembuatan akun tidak bisa ditembus *role* ADMIN lewat manipulasi HTTP Request.
-- **AI Accuracy:** Chatbot AI hanya menjawab berdasarkan data di dalam database vektor, dan *ATS Enhancement* mengembalikan format *bullet points* yang bersih.
-- **Latency & Reliability:** Upload dan Vektorisasi tidak menyebabkan aplikasi utama *freeze* (Non-blocking I/O).
+## 3. Success Criteria
+- **Data Integrity:** PostgreSQL successfully segregates data across companies (zero applicant data leakage between tenants).
+- **Security:** Login and registration are protected by JWT (Access & Refresh tokens). Account creation cannot be exploited to gain ADMIN privileges via HTTP Request manipulation.
+- **AI Accuracy:** The AI Chatbot only answers based on data within the vector database, and the ATS Enhancement returns clean, bulleted formatting.
+- **Latency & Reliability:** Uploads and vectorization processes do not freeze the main application (Non-blocking I/O).
 
-## 4. Risiko & Mitigasi
-- **Limit Token Gemini API:** Karena versi gratis memiliki limitasi, antrian proses (Redis/BullMQ) akan diterapkan dengan strategi *retry* dan *exponential backoff*.
-- **Overhead Skema Relasional:** Untuk mempercepat query di PostgreSQL, indeksasi (`@@index`) diterapkan pada kolom yang sering dicari seperti `companyId` dan `status`.
+## 4. Risks & Mitigations
+- **Gemini API Token Limits:** To prevent hitting free-tier limits, background job queues (Redis/BullMQ) will be implemented with retry and exponential backoff strategies.
+- **Relational Schema Overhead:** To maintain fast query speeds in PostgreSQL, indexing (`@@index`) is applied to frequently queried columns such as `companyId` and `status`.
 
 ---
 *© 2026 Djembar Arafat. All Rights Reserved.*
