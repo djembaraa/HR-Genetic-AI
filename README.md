@@ -76,3 +76,6 @@ npm run dev
 ```
 
 The application will be accessible at `http://localhost:5173`.
+
+---
+*© 2026 Djembar Arafat. All Rights Reserved.*
