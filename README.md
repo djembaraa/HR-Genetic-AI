@@ -1,27 +1,35 @@
-# HR-Genetic-AI
+# HR Genetic AI
 
-HR-Genetic-AI is a Next-Generation Applicant Tracking System (ATS) powered by Generative AI. This platform autonomously screens, summarizes, and retrieves ideal candidates based on their CVs using Retrieval-Augmented Generation (RAG) and Agentic Tool Calling.
+HR Genetic AI is an enterprise-grade, dual-sided Applicant Tracking System (ATS) and Career Portal powered by Retrieval-Augmented Generation (RAG) and Agentic Workflow algorithms. The platform autonomously screens resumes, optimizes candidate profiles, and provides a conversational AI assistant for Human Resources professionals to query applicant data with precision.
+
+## Core Capabilities
+
+- **B2B HR Dashboard:** Multi-tenant isolated workspace for recruiters to manage job postings, parse applicant data, and consult a contextual AI Assistant to identify the best candidates.
+- **B2C Candidate Portal:** A structured resume builder that allows job seekers to input their experience and utilize a "Human-in-the-Loop" AI to enhance their profiles for ATS compatibility.
+- **Agentic RAG Engine:** Leverages Google Gemini and ChromaDB to extract, embed, and semantically search unstructured CV data, entirely preventing AI hallucinations through strict contextual bounds.
 
 ## System Architecture
 
-The application is built using a Microservices architecture to ensure scalability and separation of concerns:
+The application implements a distributed microservices architecture to ensure high availability, data isolation, and separation of concerns:
 
-- **Frontend:** React (Vite) - Handles the user interface, CV uploads, and the HR Chatbot UI.
-- **API Gateway:** Node.js (Express) & Prisma ORM (SQLite) - Acts as the primary backend for data management and file routing.
-- **AI Microservice:** Python (FastAPI) & Langchain - Handles PDF extraction, vector embeddings (ChromaDB), and Agentic LLM interactions via Google Gemini API.
+- **Frontend Application (React / Vite):** Handles the user interface, incorporating strict responsive design systems and dual-portal layouts (Candidate vs. HR).
+- **API Gateway (Node.js / Express):** Acts as the primary orchestrator, managing Role-Based Access Control (RBAC), JWT authentication, PostgreSQL relational data (via Prisma ORM), and asynchronous task queues (BullMQ).
+- **AI Microservice (Python / FastAPI):** Dedicated intelligence layer running LangGraph. Manages vectorization, semantic caching, and Large Language Model (LLM) invocations.
 
-## Technical Specifications
+## Technical Stack
 
-- **Frontend:** React, Vite, Vanilla CSS
-- **Backend:** Node.js, Express, Prisma, Multer
-- **AI Service:** Python, FastAPI, Langchain, ChromaDB, Google Gemini API
+- **Client:** React 18, Vite, Lucide React, Vanilla CSS (BEM Architecture)
+- **Gateway:** Node.js v24, Express, Prisma ORM, PostgreSQL, Zod, Redis (BullMQ)
+- **Intelligence:** Python 3.9+, FastAPI, LangChain, LangGraph, ChromaDB, Google Gemini API
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v24 or higher)
 - Python (3.9 or higher)
+- PostgreSQL (or Supabase instance)
+- Redis (Optional for local MVP)
 - Google Gemini API Key
 
 ### Installation
@@ -32,22 +40,36 @@ The application is built using a Microservices architecture to ensure scalabilit
    cd HR-Genetic-AI
    ```
 
-2. **Setup AI Microservice (Python):**
+2. **Configure the AI Microservice (Python):**
    ```bash
    cd ai-service
-   pip install fastapi uvicorn python-multipart langchain langchain-community langchain-chroma chromadb langchain-google-genai pypdf python-dotenv
+   python -m venv venv
+   source venv/bin/activate  # Or `venv\Scripts\activate` on Windows
+   pip install -r requirements.txt
    ```
-   Create a `.env` file in the `ai-service/` directory and add your API key:
-   `GEMINI_API_KEY="your_google_gemini_api_key"`
+   Create a `.env` file in the `ai-service/` directory:
+   ```env
+   GOOGLE_API_KEY="your_google_gemini_api_key"
+   ```
 
-3. **Setup API Gateway (Node.js):**
+3. **Configure the API Gateway (Node.js):**
    ```bash
    cd ../backend-node
    npm install
+   ```
+   Create a `.env` file in the `backend-node/` directory:
+   ```env
+   DATABASE_URL="postgresql://user:pass@localhost:5432/hr_genetic_ai"
+   JWT_SECRET="your_secure_random_string"
+   AI_SERVICE_URL="http://localhost:8000"
+   ```
+   Run database migrations:
+   ```bash
    npx prisma migrate dev --name init
+   npx prisma db seed
    ```
 
-4. **Setup Frontend (React):**
+4. **Configure the Frontend (React):**
    ```bash
    cd ../frontend
    npm install
@@ -55,7 +77,7 @@ The application is built using a Microservices architecture to ensure scalabilit
 
 ### Running the Application
 
-To run the application locally, you will need to start all three services in separate terminal instances.
+To run the application locally, start all three services in separate terminal instances.
 
 **Terminal 1 (AI Service):**
 ```bash
