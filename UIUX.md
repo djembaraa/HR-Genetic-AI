@@ -15,7 +15,7 @@
 
 **Color Strategy:** White-dominant with a single bold accent. The reference uses deep purple/indigo for CTAs and active states. All backgrounds are clean white or off-white. Text uses a strict gray-black hierarchy. No gradients on interactive elements.
 
-**Typography:** Tight tracking on display headings (-0.04em). Generous line-height on body text (1.6). Strong weight contrast between headings (600-700) and body (400). A single font family throughout (Inter or equivalent).
+**Typography:** Tight tracking on display headings (-0.04em). Generous line-height on body text (1.6). Strong weight contrast between headings (600-700) and body (400). A single font family throughout (Plus Jakarta Sans).
 
 **Card Treatment:** Thin 1px gray border. Small radius (8-12px). No drop shadow at rest; subtle shadow appears only on hover. Content padding is consistent (24px). No glassmorphism, no colored borders.
 
@@ -63,7 +63,7 @@ module.exports = {
         info: { DEFAULT: '#2563EB', light: '#EFF6FF' },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
       boxShadow: {
         card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
