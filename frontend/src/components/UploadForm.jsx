@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
 import { Card } from './Card';
+import { Upload } from 'lucide-react';
 
 export const UploadForm = () => {
   const [file, setFile] = useState(null);
@@ -45,15 +46,15 @@ export const UploadForm = () => {
   };
 
   return (
-    <Card style={{ marginTop: '2rem' }}>
+    <Card className="mt-8">
       <form onSubmit={handleUpload} aria-label="Upload CV Form">
-        <h3 style={{ marginBottom: '1.5rem' }}>Upload Candidate CV (Demo)</h3>
+        <h3 className="text-xl font-bold text-primary mb-6">Upload Candidate CV (Demo)</h3>
         
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <input 
             type="text" 
             placeholder="Full Name" 
-            className="input-modern" 
+            className="flex-1 px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all" 
             required 
             aria-label="Full Name"
             value={candidateName} 
@@ -62,7 +63,7 @@ export const UploadForm = () => {
           <input 
             type="email" 
             placeholder="Email" 
-            className="input-modern" 
+            className="flex-1 px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all" 
             required 
             aria-label="Email Address"
             value={candidateEmail} 
@@ -70,23 +71,31 @@ export const UploadForm = () => {
           />
         </div>
         
-        <label className="upload-box" style={{ display: 'block', marginBottom: '1rem' }} aria-label="File Upload Dropzone">
+        <label className="block mb-6 cursor-pointer border-2 border-dashed border-border rounded-lg p-8 text-center hover:bg-background-secondary transition-colors" aria-label="File Upload Dropzone">
           <input 
             type="file" 
             accept=".pdf" 
-            style={{ display: 'none' }} 
+            className="hidden" 
             onChange={e => setFile(e.target.files[0])} 
             aria-label="Select PDF File"
           />
-          <p style={{ color: 'var(--primary-color)', fontWeight: 600 }}>
-            {file ? file.name : '+ Click to Upload PDF CV'}
-          </p>
+          <div className="flex flex-col items-center gap-2">
+            <Upload className="w-8 h-8 text-accent mb-2" />
+            <p className="text-primary font-semibold">
+              {file ? file.name : 'Click to Upload PDF CV'}
+            </p>
+            <p className="text-sm text-text-secondary">PDF files only (max 10MB)</p>
+          </div>
         </label>
 
-        <Button type="submit" style={{ width: '100%' }} disabled={isLoading} aria-label="Submit CV">
-          {isLoading ? 'Processing...' : 'Submit & Process CV'}
+        <Button type="submit" className="w-full" loading={isLoading} aria-label="Submit CV">
+          Submit & Process CV
         </Button>
-        {uploadStatus && <p style={{ marginTop: '1rem', color: 'var(--primary-color)', textAlign: 'center' }} role="alert">{uploadStatus}</p>}
+        {uploadStatus && (
+          <p className="mt-4 text-accent font-medium text-center" role="alert">
+            {uploadStatus}
+          </p>
+        )}
       </form>
     </Card>
   );

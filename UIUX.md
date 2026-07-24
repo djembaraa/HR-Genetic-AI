@@ -25,114 +25,53 @@
 
 ---
 
-## 2. Design System Tokens
+## 2. Design System Tokens (Tailwind v3 Configuration)
 
-### Colors
-
-```css
-:root {
-  /* Brand */
-  --color-primary: #111827;         /* Near-black for primary actions */
-  --color-primary-hover: #1F2937;
-  --color-accent: #6C2BD9;          /* Deep purple - CTAs, badges, active nav */
-  --color-accent-hover: #5B21B6;
-  --color-accent-light: #F5F3FF;    /* Light purple tint for backgrounds */
-  --color-accent-muted: #DDD6FE;    /* Purple border for active elements */
-  
-  /* Neutrals */
-  --color-white: #FFFFFF;
-  --color-bg: #FFFFFF;
-  --color-bg-secondary: #F9FAFB;
-  --color-bg-tertiary: #F3F4F6;
-  --color-border: #E5E7EB;
-  --color-border-hover: #D1D5DB;
-  --color-border-focus: #6C2BD9;
-  
-  /* Text */
-  --color-text-primary: #111827;
-  --color-text-secondary: #4B5563;
-  --color-text-tertiary: #9CA3AF;
-  --color-text-inverse: #FFFFFF;
-  
-  /* Semantic */
-  --color-success: #059669;
-  --color-success-light: #ECFDF5;
-  --color-warning: #D97706;
-  --color-warning-light: #FFFBEB;
-  --color-error: #DC2626;
-  --color-error-light: #FEF2F2;
-  --color-info: #2563EB;
-  --color-info-light: #EFF6FF;
-}
-```
-
-### Typography
-
-```css
-:root {
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
-  --text-xs: 0.75rem;      /* 12px - captions, badges */
-  --text-sm: 0.875rem;     /* 14px - body small, table cells */
-  --text-base: 1rem;       /* 16px - body default */
-  --text-lg: 1.125rem;     /* 18px - subtitles */
-  --text-xl: 1.25rem;      /* 20px - section subheadings */
-  --text-2xl: 1.5rem;      /* 24px - card headings */
-  --text-3xl: 1.875rem;    /* 30px - page titles */
-  --text-4xl: 2.25rem;     /* 36px - hero subheading */
-  --text-display: 3.5rem;  /* 56px - hero main heading */
-  
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  
-  --leading-tight: 1.1;    /* Display headings */
-  --leading-snug: 1.3;     /* Section headings */
-  --leading-normal: 1.5;   /* Body text */
-  --leading-relaxed: 1.6;  /* Subtitle / description */
-  
-  --tracking-tight: -0.04em;  /* Display headings */
-  --tracking-normal: 0;       /* Body */
-  --tracking-wide: 0.05em;    /* Labels, uppercase text */
-}
-```
-
-### Spacing Scale
-
-```css
-:root {
-  --space-0: 0;
-  --space-1: 0.25rem;    /* 4px */
-  --space-2: 0.5rem;     /* 8px */
-  --space-3: 0.75rem;    /* 12px */
-  --space-4: 1rem;       /* 16px */
-  --space-5: 1.25rem;    /* 20px */
-  --space-6: 1.5rem;     /* 24px */
-  --space-8: 2rem;       /* 32px */
-  --space-10: 2.5rem;    /* 40px */
-  --space-12: 3rem;      /* 48px */
-  --space-16: 4rem;      /* 64px */
-  --space-20: 5rem;      /* 80px */
-  --space-24: 6rem;      /* 96px */
-  --space-32: 8rem;      /* 128px */
-}
-```
-
-### Radii and Shadows
-
-```css
-:root {
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-  
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#111827',
+          hover: '#1F2937',
+        },
+        accent: {
+          DEFAULT: '#6C2BD9',
+          hover: '#5B21B6',
+          light: '#F5F3FF',
+          muted: '#DDD6FE',
+        },
+        background: {
+          DEFAULT: '#FFFFFF',
+          secondary: '#F9FAFB',
+          tertiary: '#F3F4F6',
+        },
+        border: {
+          DEFAULT: '#E5E7EB',
+          hover: '#D1D5DB',
+          focus: '#6C2BD9',
+        },
+        success: { DEFAULT: '#059669', light: '#ECFDF5' },
+        warning: { DEFAULT: '#D97706', light: '#FFFBEB' },
+        error: { DEFAULT: '#DC2626', light: '#FEF2F2' },
+        info: { DEFAULT: '#2563EB', light: '#EFF6FF' },
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+      boxShadow: {
+        card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+      }
+    },
+  },
+  plugins: [],
 }
 ```
 
@@ -379,33 +318,33 @@ const IconCircle = ({ icon: Icon }) => (
 
 ---
 
-## 9. CSS Architecture (BEM Convention)
+## 9. CSS Architecture (Tailwind Utility-First)
 
 ### File Structure
 
 ```
-frontend/src/
-  index.css         # Tokens + resets + base typography
-  mobile.css        # All @media queries (imported by index.css)
-  components/
-    Button.jsx      # .btn .btn--primary .btn--secondary .btn--ghost .btn--sm .btn--lg
-    Card.jsx        # .card .card--compact .card--spacious
-    Navbar.jsx      # .navbar .navbar__logo .navbar__links .navbar__cta .navbar__hamburger
-    Sidebar.jsx     # .sidebar .sidebar__section .sidebar__item .sidebar__item--active
-    Footer.jsx      # .footer .footer__grid .footer__column .footer__copyright
-    UploadForm.jsx  # .upload .upload__dropzone .upload__dropzone--active
-    ChatBox.jsx     # .chat .chat__messages .chat__bubble .chat__bubble--user .chat__bubble--bot
+frontend/
+  tailwind.config.js
+  src/
+    index.css         # @tailwind base; @tailwind components; @tailwind utilities;
+    components/
+      Button.jsx      # Uses Tailwind classes (e.g. `bg-accent text-white px-4 py-2 rounded-md`)
+      Card.jsx        # Uses Tailwind classes (e.g. `border border-border rounded-lg shadow-sm`)
+      Navbar.jsx      # Uses Tailwind classes (e.g. `fixed w-full h-16 bg-white border-b`)
+      Sidebar.jsx     # Uses Tailwind classes
+      Footer.jsx      # Uses Tailwind classes
+      UploadForm.jsx  
+      ChatBox.jsx     
 ```
 
 ### Anti-Patterns to Eliminate
 
 | Anti-Pattern | Current Codebase Instances | Fix |
 |:-------------|:---------------------------|:----|
-| Inline `style={{ }}` props | Every component and page file | Extract to named CSS classes |
-| Hardcoded color values | `#fafafa`, `#ef4444`, `rgba(...)` scattered throughout | Replace with `var(--color-*)` tokens |
+| Inline `style={{ }}` props | Every component and page file | Replace with Tailwind utility classes |
+| Hardcoded color values | `#fafafa`, `#ef4444`, `rgba(...)` scattered throughout | Replace with `bg-background-secondary`, `text-error`, etc. |
 | Emoji characters in JSX | 4 instances in `App.jsx` | Replace with `lucide-react` components |
-| CSS class name inconsistency | `.minimalist-card`, `.glass-container`, `.btn-primary` | Consolidate under BEM: `.card`, `.btn--primary` |
-| Redundant CSS class definitions | `.glass-container` still in old CSS, `.minimalist-card` in current | Remove all unused classes |
+| Custom CSS classes | `.minimalist-card`, `.glass-container`, `.btn-primary` | Delete all custom CSS classes and use Tailwind utilities exclusively |
 
 ---
 *© 2026 Djembar Arafat. All Rights Reserved.*

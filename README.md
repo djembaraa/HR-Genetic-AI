@@ -18,7 +18,7 @@ The application implements a distributed microservices architecture to ensure hi
 
 ## Technical Stack
 
-- **Client:** React 18, Vite, Lucide React, Vanilla CSS (BEM Architecture)
+- **Client:** React 18, Vite, Lucide React, Tailwind CSS v3
 - **Gateway:** Node.js v24, Express, Prisma ORM, PostgreSQL, Zod, Redis (BullMQ)
 - **Intelligence:** Python 3.9+, FastAPI, LangChain, LangGraph, ChromaDB, Google Gemini API
 

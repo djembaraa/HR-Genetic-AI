@@ -1,69 +1,56 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, Settings, LogOut } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Users, Briefcase, Settings, LogOut, FileText } from 'lucide-react';
+import { cn } from './Card'; // or any util file where cn is exported
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const navItemClass = ({ isActive }) => 
+    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${
+      isActive 
+        ? 'bg-accent/10 text-accent font-semibold border-l-4 border-accent' 
+        : 'text-text-secondary hover:bg-background-secondary hover:text-primary'
+    }`;
+
   return (
-    <div style={{
-      width: '260px',
-      height: '100vh',
-      background: '#ffffff',
-      borderRight: '1px solid var(--border-color)',
-      position: 'fixed',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '1.5rem 1rem'
-    }}>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, paddingLeft: '1rem', marginBottom: '2rem' }}>
-        Wiratek AI
+    <div className="w-[260px] h-screen bg-white border-r border-border fixed flex flex-col p-6 z-40">
+      <div className="text-2xl font-bold text-primary mb-8 px-2">
+        HR Genetic AI
       </div>
 
-      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '1rem', paddingLeft: '1rem', textTransform: 'uppercase' }}>
+      <div className="text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-4 px-2">
         Main Menu
       </div>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexGrow: 1 }}>
-        <NavLink to="/admin" end style={({isActive}) => ({
-          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
-          borderRadius: '8px', textDecoration: 'none', color: isActive ? 'var(--primary-color)' : 'var(--text-light)',
-          background: isActive ? '#f9f9f9' : 'transparent', fontWeight: isActive ? 600 : 500
-        })}>
+      <nav className="flex flex-col gap-2 flex-grow">
+        <NavLink to="/admin" end className={navItemClass}>
           <LayoutDashboard size={20} /> Dashboard
         </NavLink>
-        <NavLink to="/admin/candidates" style={({isActive}) => ({
-          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
-          borderRadius: '8px', textDecoration: 'none', color: isActive ? 'var(--primary-color)' : 'var(--text-light)',
-          background: isActive ? '#f9f9f9' : 'transparent', fontWeight: isActive ? 600 : 500
-        })}>
+        <NavLink to="/admin/candidates" className={navItemClass}>
           <Users size={20} /> Candidates
         </NavLink>
-        <NavLink to="/admin/jobs" style={({isActive}) => ({
-          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
-          borderRadius: '8px', textDecoration: 'none', color: isActive ? 'var(--primary-color)' : 'var(--text-light)',
-          background: isActive ? '#f9f9f9' : 'transparent', fontWeight: isActive ? 600 : 500
-        })}>
+        <NavLink to="/admin/jobs" className={navItemClass}>
           <Briefcase size={20} /> Jobs
         </NavLink>
-        <NavLink to="/admin/settings" style={({isActive}) => ({
-          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
-          borderRadius: '8px', textDecoration: 'none', color: isActive ? 'var(--primary-color)' : 'var(--text-light)',
-          background: isActive ? '#f9f9f9' : 'transparent', fontWeight: isActive ? 600 : 500
-        })}>
+        <NavLink to="/admin/settings" className={navItemClass}>
           <Settings size={20} /> Settings
         </NavLink>
       </nav>
 
-      <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-        <a href="#" onClick={(e) => {
-          e.preventDefault();
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-        }} style={{
-          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', 
-          borderRadius: '8px', textDecoration: 'none', color: '#ef4444', fontWeight: 500
-        }}>
+      <div className="pt-4 border-t border-border mt-auto">
+        <button 
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 px-4 py-3 rounded-lg text-error hover:bg-error-light font-medium transition-colors"
+        >
           <LogOut size={20} /> Logout
-        </a>
+        </button>
       </div>
     </div>
   );
