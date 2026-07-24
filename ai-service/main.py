@@ -18,7 +18,7 @@ app = FastAPI(title="AI ATS Service")
 # Allow CORS for local dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,7 +32,7 @@ def read_root():
     return {"message": "AI ATS Service is running!"}
 
 @app.post("/api/process-cv")
-async def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
+def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
     """
     Receives a CV PDF from the Node backend, chunks it, and saves embeddings to ChromaDB.
     """
@@ -71,7 +71,7 @@ async def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
 @app.post("/api/chat")
-async def chat_with_agent(query: str = Form(...)):
+def chat_with_agent(query: str = Form(...)):
     """
     Chat endpoint for HR to ask questions about the candidates using RAG agent.
     """
