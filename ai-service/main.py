@@ -7,9 +7,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain.tools.retriever import create_retriever_tool
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import create_retriever_tool
+from langgraph.prebuilt import create_react_agent
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 
@@ -95,20 +95,15 @@ def chat_with_agent(query: str = Form(...)):
         )
         tools = [tool]
         
-        # 3. Setup Agent Prompt
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."),
-            ("human", "{input}"),
-            ("placeholder", "{agent_scratchpad}"),
-        ])
+        # 3. Setup system prompt
+        system_prompt = "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."
         
         # 4. Create and run Agent
-        agent = create_tool_calling_agent(llm, tools, prompt)
-        agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+        agent = create_react_agent(llm, tools, state_modifier=system_prompt)
         
-        response = agent_executor.invoke({"input": query})
+        response = agent.invoke({"messages": [HumanMessage(content=query)]})
         
-        return {"reply": response["output"]}
+        return {"reply": response["messages"][-1].content}
     except Exception as e:
         print(f"Agent Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

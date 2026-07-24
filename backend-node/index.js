@@ -1,14 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { PrismaClient } = require('@prisma/client');
+const { createClient } = require('@libsql/client');
+const { PrismaLibSql } = require('@prisma/adapter-libsql');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
-const prisma = new PrismaClient();
+const connection = createClient({ url: process.env.DATABASE_URL });
+const adapter = new PrismaLibSql(connection);
+const prisma = new PrismaClient({ adapter });
 
 // Setup Multer for handling file uploads (PDF)
 const uploadDir = path.join(__dirname, 'uploads');

@@ -1,18 +1,34 @@
 import React from 'react';
-import { Button } from './Button';
 
 export const Navbar = ({ setView }) => {
   return (
-    <nav className="navbar animate-fade-in" aria-label="Main Navigation">
-      <h2 style={{ fontWeight: 700, color: 'var(--text-dark)' }}>HR-Genetic-AI</h2>
-      <ul className="nav-links" role="menu">
-        <li role="menuitem"><a href="#" aria-label="Go to Home" onClick={(e) => {e.preventDefault(); setView('home')}}>Home</a></li>
-        <li role="menuitem"><a href="#" aria-label="Go to HR Dashboard" onClick={(e) => {e.preventDefault(); setView('dashboard')}}>HR Dashboard</a></li>
-      </ul>
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <Button variant="secondary" aria-label="Log In">Log In</Button>
-        <Button variant="primary" aria-label="HR Access" onClick={() => setView('dashboard')}>HR Access</Button>
+    <nav className="navbar" style={{
+      position: 'fixed',
+      top: 0,
+      width: '100%',
+      zIndex: 100,
+      background: 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid var(--border-color)',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem 2rem'
+    }}>
+      <div className="logo" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-dark)' }}>
+        Wiratek AI
       </div>
+      <ul className="nav-links" style={{ display: 'flex', gap: '2rem', listStyle: 'none' }}>
+        <li><a href="#home" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Home</a></li>
+        <li><a href="#features" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>Features</a></li>
+        <li><a href="#about" onClick={() => setView('home')} style={{ color: 'var(--text-light)', textDecoration: 'none' }}>About Us</a></li>
+        <li>
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            setView('dashboard');
+          }} style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'none' }}>Dashboard ATS</a>
+        </li>
+      </ul>
     </nav>
   );
 };

@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+langchain
+langchain-community
+langchain-chroma
+chromadb
+langchain-google-genai
+pypdf
+python-dotenv
+aiofiles
