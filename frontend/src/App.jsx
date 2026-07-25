@@ -10,9 +10,18 @@ import { Bot, Zap, ShieldCheck, Gauge } from 'lucide-react';
 // Pages & Layouts
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
+import { ProtectedRoute } from './components/ProtectedRoute';
+
+// Admin Pages
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminDashboard } from './pages/AdminDashboard';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { Jobs } from './pages/admin/Jobs';
+import { Candidates } from './pages/admin/Candidates';
+
+// Candidate Pages
+import { CandidateLayout } from './layouts/CandidateLayout';
+import { CandidateDashboard } from './pages/candidate/CandidateDashboard';
+import { ResumeBuilder } from './pages/candidate/ResumeBuilder';
 
 const FeatureIcon = ({ icon: Icon }) => (
   <div className="w-12 h-12 rounded-lg bg-accent-light flex items-center justify-center mb-4">
@@ -136,9 +145,18 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="candidates" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Candidates Module</h2><p className="text-text-secondary">Coming soon...</p></div>} />
-            <Route path="jobs" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Jobs Module</h2><p className="text-text-secondary">Coming soon...</p></div>} />
+            <Route path="candidates" element={<Candidates />} />
+            <Route path="jobs" element={<Jobs />} />
             <Route path="settings" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Settings Module</h2><p className="text-text-secondary">Coming soon...</p></div>} />
+          </Route>
+        </Route>
+
+        {/* Protected Candidate Routes */}
+        <Route path="/candidate" element={<ProtectedRoute />}>
+          <Route element={<CandidateLayout />}>
+            <Route index element={<CandidateDashboard />} />
+            <Route path="resume-builder" element={<ResumeBuilder />} />
+            <Route path="profile" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Profile Settings</h2><p className="text-text-secondary">Coming soon...</p></div>} />
           </Route>
         </Route>
       </Routes>

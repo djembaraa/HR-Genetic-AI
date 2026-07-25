@@ -13,7 +13,12 @@ app.use(cors());
 app.use(express.json()); // Essential for receiving JSON in req.body
 
 const authRoutes = require('./routes/auth');
+const jobsRoutes = require('./routes/jobs');
+const candidateRoutes = require('./routes/candidate');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/jobs', jobsRoutes);
+app.use('/api/candidate', candidateRoutes);
 
 const { authenticateToken, requireRole } = require('./middleware/auth');
 
