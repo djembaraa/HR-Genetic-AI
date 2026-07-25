@@ -70,6 +70,28 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
     
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
+@app.post("/api/enhance-resume")
+def enhance_resume(text: str = Form(...)):
+    """
+    Takes raw resume text and rewrites it into a professional, ATS-friendly format
+    using active verbs and emphasizing metrics.
+    """
+    try:
+        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
+        prompt = (
+            "You are an expert Resume Writer and ATS Optimizer. "
+            "Rewrite the following text into professional, impactful bullet points. "
+            "Use strong action verbs, quantify achievements where possible, and remove fluff. "
+            "Return ONLY the rewritten text, without any conversational preamble or markdown headers. "
+            "Keep it concise and punchy.\n\n"
+            f"Original text:\n{text}"
+        )
+        response = llm.invoke(prompt)
+        return {"enhanced_text": response.content}
+    except Exception as e:
+        print(f"Error enhancing resume: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/chat")
 def chat_with_agent(query: str = Form(...)):
     """

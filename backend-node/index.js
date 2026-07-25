@@ -15,10 +15,12 @@ app.use(express.json()); // Essential for receiving JSON in req.body
 const authRoutes = require('./routes/auth');
 const jobsRoutes = require('./routes/jobs');
 const candidateRoutes = require('./routes/candidate');
+const aiRoutes = require('./routes/ai');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/candidate', candidateRoutes);
+app.use('/api/ai', aiRoutes);
 
 const { authenticateToken, requireRole } = require('./middleware/auth');
 
@@ -128,6 +130,9 @@ app.post('/api/hr/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', '
         res.status(500).json({ error: 'Internal Server Error connecting to AI Agent' });
     }
 });
+
+// Start BullMQ Worker
+require('./workers/vectorizeWorker');
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

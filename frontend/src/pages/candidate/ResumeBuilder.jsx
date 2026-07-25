@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award } from 'lucide-react';
+import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award, X, Check } from 'lucide-react';
 
 export const ResumeBuilder = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // AI Modal State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState('');
+  const [currentExpId, setCurrentExpId] = useState(null);
 
   const fetchProfile = async () => {
     const token = localStorage.getItem('token');
@@ -65,11 +71,94 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const handleEnhanceWithAI = async (exp) => {
+    setCurrentExpId(exp.id);
+    setShowAiModal(true);
+    setAiLoading(true);
+    setAiSuggestion('');
+
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('http://localhost:3000/api/ai/enhance', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: exp.description })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiSuggestion(data.enhanced_text);
+      }
+    } catch (error) {
+      console.error(error);
+      setAiSuggestion('Failed to connect to AI Service. Is the Python server running?');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const acceptAiSuggestion = async () => {
+    // Ideally we update the experience via PUT request, but for MVP we will just close the modal.
+    // To implement fully: call PUT /api/candidate/experience/:id
+    setShowAiModal(false);
+    alert('AI Suggestion Accepted! (Backend PUT pending)');
+  };
+
+  const handleVectorize = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('http://localhost:3000/api/candidate/vectorize', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      alert('Your profile has been queued for background AI processing!');
+    } catch(err) {}
+  };
+
   if (loading) return <div className="p-8 text-text-secondary">Loading your profile...</div>;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-8 relative">
       
+      {/* AI Modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-2xl w-full border-accent border-t-4 shadow-2xl relative">
+            <button onClick={() => setShowAiModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary">
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-bold text-primary mb-2 flex items-center gap-2">
+              <Wand2 className="text-accent" /> AI Enhancement
+            </h2>
+            <p className="text-text-secondary mb-6">Review the AI's suggestion before applying it to your resume.</p>
+            
+            <div className="bg-background-secondary rounded-lg p-6 min-h-[150px] flex items-center justify-center mb-6 border border-border">
+              {aiLoading ? (
+                <div className="flex flex-col items-center gap-3 text-accent animate-pulse">
+                  <Wand2 size={32} className="animate-spin" />
+                  <span className="font-medium">AI is analyzing and rewriting your experience...</span>
+                </div>
+              ) : (
+                <div className="w-full text-primary font-serif whitespace-pre-wrap">
+                  {aiSuggestion}
+                </div>
+              )}
+            </div>
+
+            {!aiLoading && (
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowAiModal(false)}>Reject</Button>
+                <Button onClick={acceptAiSuggestion} className="flex items-center gap-2">
+                  <Check size={18} /> Accept Suggestion
+                </Button>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
       {/* Editor Section */}
       <div className="flex-1 space-y-8">
         <div>
@@ -129,10 +218,10 @@ export const ResumeBuilder = () => {
                 </span>
                 <p className="text-sm text-primary mt-2 whitespace-pre-wrap">{exp.description}</p>
                 
-                {/* Future AI Enhancement Button */}
+                {/* AI Enhancement Button */}
                 <div className="mt-4 pt-4 border-t border-border">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 text-accent border-accent hover:bg-accent hover:text-white">
-                    <Wand2 size={14} /> Enhance with AI (Coming Soon)
+                  <Button variant="outline" size="sm" onClick={() => handleEnhanceWithAI(exp)} className="flex items-center gap-2 text-accent border-accent hover:bg-accent hover:text-white">
+                    <Wand2 size={14} /> Enhance with AI
                   </Button>
                 </div>
               </div>
@@ -192,6 +281,12 @@ export const ResumeBuilder = () => {
                 </div>
               </div>
             )}
+            
+            <div className="mt-12 pt-6 border-t border-gray-300 flex justify-center">
+              <Button onClick={handleVectorize} className="flex items-center gap-2 w-full justify-center">
+                <Wand2 size={18} /> Finalize & Vectorize Profile
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,12 +1,37 @@
 const express = require('express');
+const { Queue } = require('bullmq');
+const Redis = require('ioredis');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
+const connection = new Redis('redis://localhost:6379');
+const aiQueue = new Queue('ai-jobs', { connection });
+
 // Middleware specifically for CANDIDATE role
 router.use(authenticateToken);
 router.use(requireRole('CANDIDATE'));
+
+// Trigger async vectorization of the candidate profile
+router.post('/vectorize', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({
+      where: { userId: req.user.userId },
+      include: { experiences: true, educations: true, skills: true }
+    });
+
+    await aiQueue.add('vectorize-profile', {
+      candidateId: candidate.id,
+      profileData: candidate
+    });
+
+    res.status(202).json({ message: 'Profile queued for AI vectorization' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to queue vectorization' });
+  }
+});
 
 // Get the logged-in candidate's full profile
 router.get('/profile', async (req, res) => {
