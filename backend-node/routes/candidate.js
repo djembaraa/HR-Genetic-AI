@@ -6,7 +6,9 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-const connection = new Redis('redis://localhost:6379');
+const connection = new Redis('redis://localhost:6379', {
+  maxRetriesPerRequest: null
+});
 const aiQueue = new Queue('ai-jobs', { connection });
 
 // Middleware specifically for CANDIDATE role

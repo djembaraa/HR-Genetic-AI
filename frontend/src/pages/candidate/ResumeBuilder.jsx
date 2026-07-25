@@ -271,9 +271,12 @@ export const ResumeBuilder = () => {
               </div>
             )}
             
-            <div className="mt-12 pt-6 border-t border-gray-300 flex justify-center">
+            <div className="mt-12 pt-6 border-t border-gray-300 flex flex-col gap-3">
               <Button onClick={handleVectorize} className="flex items-center gap-2 w-full justify-center">
-                <Wand2 size={18} /> Finalize & Vectorize Profile
+                <Wand2 size={18} /> Finalize & Publish Profile
+              </Button>
+              <Button variant="outline" onClick={() => window.open('http://localhost:3000/api/candidate/resume/pdf?token=' + localStorage.getItem('token'), '_blank')} className="flex items-center gap-2 w-full justify-center text-text-secondary">
+                <Check size={18} /> Download PDF Resume
               </Button>
             </div>
           </div>

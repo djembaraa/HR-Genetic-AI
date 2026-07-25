@@ -4,11 +4,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) return res.status(401).json({ error: 'Unauthorized: Missing token' });
+    // Check Authorization header or query parameter
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (!token) {
+        return res.status(401).json({ error: 'Access Denied: No token provided' });
+    }
+    
+    jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Forbidden: Invalid token' });
     req.user = user;
     next();

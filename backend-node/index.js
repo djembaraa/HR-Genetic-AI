@@ -20,6 +20,7 @@ const aiRoutes = require('./routes/ai');
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/candidate', candidateRoutes);
+app.use('/api/candidate/resume/pdf', require('./routes/resume-pdf'));
 app.use('/api/ai', aiRoutes);
 
 const { authenticateToken, requireRole } = require('./middleware/auth');
@@ -117,6 +118,7 @@ app.post('/api/hr/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', '
 
         const formData = new FormData();
         formData.append('query', query);
+        formData.append('thread_id', `hr_${req.user.userId}`); // Use HR user ID as thread_id
 
         const aiResponse = await fetch(`${AI_SERVICE_URL}/api/chat`, {
             method: 'POST',
