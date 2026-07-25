@@ -5,7 +5,8 @@ import { UploadForm } from './components/UploadForm';
 import { Card } from './components/Card';
 import { Footer } from './components/Footer';
 import { Button } from './components/Button';
-import { Bot, Zap, ShieldCheck, Gauge } from 'lucide-react';
+import { Bot, Zap, ShieldCheck, Gauge, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // Pages & Layouts
 import { Login } from './pages/Login';
@@ -31,43 +32,64 @@ const FeatureIcon = ({ icon: Icon }) => (
 
 // The Landing Page Component
 const LandingPage = () => (
-  <div className="flex flex-col min-h-screen">
+  <div className="flex flex-col min-h-screen relative overflow-hidden">
+    {/* Subtle Background Elements */}
+    <div className="absolute top-0 inset-x-0 h-screen bg-gradient-to-b from-background-secondary to-background -z-20"></div>
+    
     <Navbar />
     
     {/* 1. HERO SECTION */}
-    <section id="home" className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+    <section id="home" className="pt-40 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full relative">
       <div className="flex flex-col lg:flex-row items-center gap-16">
-        <div className="flex-1 text-center lg:text-left">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-primary leading-tight tracking-tight mb-6">
-            Recruit Top Talent<br/>with AI Power.
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex-1 text-center lg:text-left"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background-secondary border border-border text-sm font-medium text-primary mb-8 shadow-sm">
+            <span className="flex h-2 w-2 rounded-full bg-success"></span>
+            NexHire AI v2.0 is Live
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-primary leading-[1.1] tracking-tight mb-6">
+            Recruit top talent <br/><span className="text-text-muted">with AI power.</span>
           </h1>
-          <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-            NexHire AI Applicant Tracking System screens, summarizes, and finds ideal candidates instantly based on their CVs using Generative AI (RAG).
+          <p className="text-xl text-text-secondary mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
+            The intelligent Applicant Tracking System that screens, parses, and matches candidates instantly using Agentic RAG.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button size="lg" onClick={() => document.getElementById('upload-section').scrollIntoView()}>
-              Try AI Screening
+            <Button size="lg" className="group" onClick={() => document.getElementById('upload-section').scrollIntoView()}>
+              Try AI Screening <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button size="lg" variant="secondary" onClick={() => window.location.href='/login'}>
               Admin Login
             </Button>
           </div>
-        </div>
+        </motion.div>
         
-        <div className="flex-1 w-full max-w-lg">
-          <Card padding="spacious" className="text-center relative">
-            <div className="absolute -top-6 -right-6 w-24 h-24 bg-accent-light rounded-full -z-10 blur-2xl"></div>
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-info-light rounded-full -z-10 blur-2xl"></div>
-            
-            <div className="mx-auto w-20 h-20 bg-background-secondary rounded-full flex items-center justify-center mb-6 border border-border">
-              <Bot size={40} className="text-primary" strokeWidth={1.5} />
-            </div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          className="flex-1 w-full max-w-lg relative"
+        >
+          {/* Decorative floating shapes */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-border/30 rounded-full blur-3xl -z-10"></div>
+          
+          <Card padding="spacious" className="text-center shadow-float border-border/50 bg-white/80 backdrop-blur-xl">
+            <motion.div 
+              animate={{ y: [0, -10, 0] }} 
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="mx-auto w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/20 rotate-3"
+            >
+              <Bot size={40} className="text-white" strokeWidth={1.5} />
+            </motion.div>
             <h2 className="text-2xl font-bold text-primary mb-3">AI Agent Ready</h2>
-            <p className="text-text-secondary leading-relaxed">
-              Upload a PDF CV and watch the AI extract context instantly into ChromaDB.
+            <p className="text-text-secondary leading-relaxed font-medium">
+              Upload a CV and let the Agentic LangGraph pipeline extract structured data into ChromaDB.
             </p>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </section>
 

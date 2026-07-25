@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award, X, Check } from 'lucide-react';
 
 export const ResumeBuilder = () => {
@@ -174,29 +175,17 @@ export const ResumeBuilder = () => {
           </div>
           
           <form onSubmit={addExperience} className="space-y-4 mb-8">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">Company</label>
-                <input required name="company" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary focus:outline-none focus:border-accent" placeholder="e.g. Google" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input required name="company" type="text" label="Company Name" placeholder="e.g. Google" />
+                <Input required name="title" type="text" label="Job Title" placeholder="e.g. Software Engineer" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input required name="startDate" type="date" label="Start Date" />
+                <Input name="endDate" type="date" label="End Date" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">Job Title</label>
-                <input required name="title" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary focus:outline-none focus:border-accent" placeholder="e.g. Software Engineer" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">Start Date</label>
-                <input required name="startDate" type="date" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">End Date</label>
-                <input name="endDate" type="date" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary focus:outline-none focus:border-accent" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-primary mb-1">Description</label>
-              <textarea required name="description" rows={4} className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary focus:outline-none focus:border-accent resize-none" placeholder="Describe your responsibilities and achievements..."></textarea>
+                <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+                <textarea required name="description" rows="4" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="Describe your responsibilities and achievements..."></textarea>
             </div>
             <div className="flex justify-end">
               <Button type="submit" className="flex items-center gap-2">

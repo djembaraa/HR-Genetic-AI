@@ -1,71 +1,113 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { Input } from '../components/Input';
+import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
       const res = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+
       const data = await res.json();
+      
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        if(data.user.role === 'ADMIN') {
-           navigate('/admin');
+        
+        if (data.user.role === 'ADMIN' || data.user.role === 'HR_MANAGER' || data.user.role === 'RECRUITER') {
+          navigate('/admin');
         } else {
-           navigate('/');
+          navigate('/candidate');
         }
       } else {
-        setError(data.error);
+        setError(data.error || 'Login failed');
       }
     } catch (err) {
-      setError('Network error');
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#fafafa' }}>
-      <Card style={{ width: '400px', padding: '3rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Sign In</h2>
-        {error && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.875rem', textAlign: 'center' }}>{error}</div>}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Email</label>
-            <input 
-              type="email" 
-              className="input-modern" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              required 
-            />
+    <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-border/40 rounded-full blur-3xl -z-10 translate-x-[-20%] translate-y-[-20%]"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-border/40 rounded-full blur-3xl -z-10 translate-x-[20%] translate-y-[20%]"></div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md"
+      >
+        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-primary mb-6 transition-colors">
+          <ArrowLeft size={16} /> Back to Home
+        </Link>
+        
+        <Card padding="spacious" glass className="shadow-float">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-primary tracking-tight">Welcome Back</h1>
+            <p className="text-text-secondary mt-2">Log in to your NexHire AI account</p>
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Password</label>
-            <input 
-              type="password" 
-              className="input-modern" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              required 
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            <Input
+              label="Email Address"
+              icon={Mail}
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
+            
+            <Input
+              label="Password"
+              icon={Lock}
+              type="password"
+              required
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {error && <div className="text-error text-sm font-medium p-3 bg-error-light rounded-lg">{error}</div>}
+
+            <Button type="submit" className="w-full mt-2" disabled={loading}>
+              {loading ? 'Authenticating...' : (
+                <span className="flex items-center gap-2 justify-center">
+                  Sign In <LogIn size={18} />
+                </span>
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-8 text-center text-sm text-text-secondary">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-primary font-bold hover:underline">
+              Create an account
+            </Link>
           </div>
-          <Button type="submit" style={{ marginTop: '1rem' }}>Sign In</Button>
-        </form>
-        <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-          Don't have an account? <Link to="/signup" style={{ color: 'var(--text-dark)', fontWeight: 600 }}>Sign Up</Link>
-        </div>
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 };

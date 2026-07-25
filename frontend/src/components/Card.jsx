@@ -1,36 +1,41 @@
 import React from 'react';
-import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-export const Card = React.forwardRef(({ 
+export const Card = ({ 
   children, 
-  padding = 'default',
-  className,
+  className, 
+  padding = 'normal',
+  hoverable = false,
+  glass = false,
   ...props 
-}, ref) => {
+}) => {
+  const baseStyles = 'bg-background rounded-2xl border border-border transition-all duration-300';
   const paddings = {
-    none: "",
-    compact: "p-4",
-    default: "p-6",
-    spacious: "p-8"
+    none: '',
+    small: 'p-4',
+    normal: 'p-6',
+    spacious: 'p-8',
   };
+  
+  const hoverStyles = hoverable ? 'hover:shadow-card-hover hover:border-border-hover hover:-translate-y-1' : 'shadow-card';
+  const glassStyles = glass ? 'glass' : '';
+
+  const Component = hoverable ? motion.div : 'div';
+  const motionProps = hoverable ? { whileHover: { y: -2 } } : {};
 
   return (
-    <div 
-      ref={ref}
-      className={cn(
-        "bg-white border border-border rounded-xl shadow-sm hover:shadow-card-hover transition-shadow duration-200", 
-        paddings[padding],
-        className
-      )}
+    <Component 
+      className={cn(baseStyles, paddings[padding], hoverStyles, glassStyles, className)} 
+      {...motionProps}
       {...props}
     >
       {children}
-    </div>
+    </Component>
   );
-});
-Card.displayName = "Card";
+};
