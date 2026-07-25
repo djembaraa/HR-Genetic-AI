@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const prisma = require('./lib/prisma');
-const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
@@ -16,20 +15,9 @@ app.use(express.json()); // Essential for receiving JSON in req.body
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-// JWT Middleware for Protected Routes
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) return res.sendStatus(401);
+const { authenticateToken, requireRole } = require('./middleware/auth');
 
-  const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
-  
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
+// JWT Middleware is now imported from ./middleware/auth.js
 
 // Setup Multer for handling file uploads (PDF)
 const uploadDir = path.join(__dirname, 'uploads');
@@ -62,9 +50,7 @@ app.get('/', (req, res) => {
 });
 
 // Example of a Protected Route (Admin Only)
-app.get('/api/admin/dashboard', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin access required' });
-  
+app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN'), async (req, res) => {
   // Dashboard mock stats
   res.json({
     message: `Welcome Admin ${req.user.email}`,
@@ -118,7 +104,7 @@ app.post('/api/candidates/upload', upload.single('cv'), async (req, res) => {
 });
 
 // Endpoint to chat with HR Agent
-app.post('/api/hr/chat', async (req, res) => {
+app.post('/api/hr/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
     try {
         const { query } = req.body;
 
