@@ -141,7 +141,22 @@ export const Onboarding = () => {
               >
                 <div>
                   <h2 className="text-2xl font-bold text-primary mb-1">Basic Information</h2>
-                  <p className="text-sm text-text-secondary mb-6">Where are you located and what are you looking for?</p>
+                  <p className="text-sm text-text-secondary mb-4">Where are you located and what are you looking for?</p>
+                </div>
+
+                <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                      <Sparkles className="text-accent" size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-primary text-sm">Have a CV already?</h4>
+                      <p className="text-xs text-text-secondary">Before filling manually, check if your CV meets ATS standards!</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => window.open('/candidate/cv-analyzer', '_blank')} className="border-accent text-accent hover:bg-accent hover:text-white shrink-0">
+                    Try CV Analyzer
+                  </Button>
                 </div>
                 
                 <LocationAutocomplete
