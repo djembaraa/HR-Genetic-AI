@@ -20,6 +20,8 @@ const aiRoutes = require('./routes/ai');
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/candidate', candidateRoutes);
+app.use('/api/candidate/resume/pdf', require('./routes/resume-pdf'));
+app.use('/api/hr', require('./routes/hr'));
 app.use('/api/ai', aiRoutes);
 
 const { authenticateToken, requireRole } = require('./middleware/auth');
@@ -110,26 +112,7 @@ app.post('/api/candidates/upload', upload.single('cv'), async (req, res) => {
     }
 });
 
-// Endpoint to chat with HR Agent
-app.post('/api/hr/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
-    try {
-        const { query } = req.body;
-
-        const formData = new FormData();
-        formData.append('query', query);
-
-        const aiResponse = await fetch(`${AI_SERVICE_URL}/api/chat`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const aiResult = await aiResponse.json();
-        res.json(aiResult);
-    } catch (error) {
-        console.error('Chat Error:', error);
-        res.status(500).json({ error: 'Internal Server Error connecting to AI Agent' });
-    }
-});
+// AI Agent chat route moved to routes/hr.js
 
 // Start BullMQ Worker
 require('./workers/vectorizeWorker');
