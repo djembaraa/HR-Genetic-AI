@@ -99,6 +99,12 @@ jobs:
       run: |
         cd backend-node
         npm run test
+      env:
+        DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
+        JWT_SECRET: test-secret-key-1234
+        JWT_REFRESH_SECRET: test-refresh-secret-1234
+        FRONTEND_URL: http://localhost:5173
+        AI_SERVICE_URL: http://localhost:8000
 
     - name: Run AI Service Tests (Pytest)
       run: |
