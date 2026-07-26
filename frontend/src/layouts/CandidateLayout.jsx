@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, FileText, User, LogOut, Hexagon } from 'lucide-react';
+import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export const CandidateLayout = () => {
@@ -33,6 +33,7 @@ export const CandidateLayout = () => {
 
   const navItems = [
     { name: 'Job Board', path: '/candidate', icon: Briefcase },
+    { name: 'My Applications', path: '/candidate/applications', icon: ListChecks },
     { name: 'My Resume', path: '/candidate/resume-builder', icon: FileText },
     { name: 'Profile', path: '/candidate/profile', icon: User },
   ];

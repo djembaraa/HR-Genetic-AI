@@ -10,6 +10,10 @@ const chatSchema = z.object({
   query: z.string().min(1, 'Query is required').max(1000, 'Query is too long')
 });
 
+const statusSchema = z.object({
+  status: z.enum(['APPLIED', 'REVIEWING', 'INTERVIEW', 'REJECTED', 'HIRED'])
+});
+
 // GET /api/hr/candidates
 // Fetch candidates applied to jobs in the HR's company
 router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
@@ -157,6 +161,54 @@ router.get('/resume/pdf/:candidateId', authenticateToken, requireRole('ADMIN', '
   } catch (error) {
     console.error('PDF Generation Error:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
+  }
+});
+
+// PUT /api/hr/applications/:id/status
+router.put('/applications/:id/status', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
+  try {
+    const validated = statusSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res.status(400).json({ error: validated.error.errors[0].message });
+    }
+    
+    const { status } = validated.data;
+    const applicationId = parseInt(req.params.id);
+    const companyId = req.user.companyId;
+
+    // Verify application belongs to this company's job
+    const application = await prisma.jobApplication.findFirst({
+      where: { 
+        id: applicationId,
+        job: { companyId }
+      },
+      include: { candidate: true, job: true }
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found or unauthorized' });
+    }
+
+    const updatedApp = await prisma.jobApplication.update({
+      where: { id: applicationId },
+      data: { status }
+    });
+
+    // Create Audit Log
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user.userId,
+        action: 'UPDATE_APPLICATION_STATUS',
+        entity: 'JobApplication',
+        entityId: applicationId,
+        details: `Updated status from ${application.status} to ${status} for candidate ${application.candidate.name} on job ${application.job.title}`
+      }
+    });
+
+    res.json(updatedApp);
+  } catch (error) {
+    console.error('Update Status Error:', error);
+    res.status(500).json({ error: 'Failed to update application status' });
   }
 });
 

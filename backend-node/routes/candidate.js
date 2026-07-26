@@ -172,6 +172,31 @@ router.get('/recommendations', async (req, res) => {
 
 // --- Job Application ---
 
+router.get('/applications', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({
+      where: { userId: req.user.userId }
+    });
+
+    if (!candidate) {
+      return res.status(404).json({ error: 'Candidate profile not found' });
+    }
+
+    const applications = await prisma.jobApplication.findMany({
+      where: { candidateId: candidate.id },
+      include: {
+        job: { include: { company: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Fetch applications error:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
 router.post('/apply/:jobId', async (req, res) => {
   const { jobId } = req.params;
   try {

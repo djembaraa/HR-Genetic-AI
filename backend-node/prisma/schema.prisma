@@ -43,7 +43,7 @@ model User {
   @@index([role])
 }
 
-// --- Security ---
+// --- Security & Audit ---
 
 model RefreshToken {
   id        Int      @id @default(autoincrement())
@@ -57,7 +57,33 @@ model RefreshToken {
   @@index([userId])
 }
 
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  entity    String
+  entityId  Int?
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+}
+
 // --- Job Postings ---
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  REMOTE
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+  DRAFT
+}
 
 model Job {
   id          Int         @id @default(autoincrement())
@@ -67,8 +93,8 @@ model Job {
   department  String
   description String
   location    String      @default("")
-  type        String      @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, REMOTE
-  status      String      @default("OPEN")      // OPEN, CLOSED, DRAFT
+  type        JobType     @default(FULL_TIME)
+  status      JobStatus   @default(OPEN)
   applications JobApplication[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -80,6 +106,13 @@ model Job {
 
 // --- Candidate Profile ---
 
+enum VectorizationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Candidate {
   id                   Int          @id @default(autoincrement())
   userId               Int          @unique
@@ -90,7 +123,7 @@ model Candidate {
   location             String?
   summary              String?
   cvFileName           String?
-  vectorizationStatus  String       @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  vectorizationStatus  VectorizationStatus @default(PENDING)
   experiences          Experience[]
   educations           Education[]
   skills               Skill[]
@@ -103,13 +136,21 @@ model Candidate {
 
 // --- Job Application ---
 
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  INTERVIEW
+  REJECTED
+  HIRED
+}
+
 model JobApplication {
   id          Int       @id @default(autoincrement())
   candidateId Int
   jobId       Int
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  status      String    @default("APPLIED") // APPLIED, REVIEWING, REJECTED, HIRED
+  status      ApplicationStatus @default(APPLIED)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -156,12 +197,19 @@ model Education {
 
 // --- Structured Resume: Skills ---
 
+enum SkillProficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
 model Skill {
   id          Int       @id @default(autoincrement())
   candidateId Int
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   name        String
-  proficiency String    @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  proficiency SkillProficiency @default(INTERMEDIATE)
   createdAt   DateTime  @default(now())
 
   @@index([candidateId])

@@ -1,39 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { User, FileText, CheckCircle2, Clock, Search, UploadCloud } from 'lucide-react';
 import { UploadForm } from '../../components/UploadForm';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
-
-
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const Candidates = () => {
-  const [candidates, setCandidates] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showUpload, setShowUpload] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchCandidates();
-  }, []);
-
-  const fetchCandidates = async () => {
-    try {
+  const { data: candidates = [], isLoading: loading } = useQuery({
+    queryKey: ['hr_candidates'],
+    queryFn: async () => {
       const token = localStorage.getItem('token');
       const res = await fetchApi('/api/hr/candidates', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setCandidates(data);
-      }
-    } catch (error) {
-      console.error('Error fetching candidates:', error);
-    } finally {
-      setLoading(false);
+      if (!res.ok) throw new Error('Failed to fetch candidates');
+      return res.json();
     }
-  };
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ applicationId, status }) => {
+      const token = localStorage.getItem('token');
+      const res = await fetchApi(`/api/hr/applications/${applicationId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error('Failed to update status');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Status updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['hr_candidates'] });
+    },
+    onError: () => {
+      toast.error('Failed to update status');
+    }
+  });
 
   const handleDownloadPDF = async (candidateId, candidateName) => {
     const token = localStorage.getItem('token');
@@ -94,8 +106,8 @@ export const Candidates = () => {
             <thead className="bg-background-secondary border-b border-border">
               <tr>
                 <th className="p-4 font-bold text-primary">Candidate</th>
-                <th className="p-4 font-bold text-primary">Applied Role</th>
-                <th className="p-4 font-bold text-primary">Status</th>
+                <th className="p-4 font-bold text-primary">Applications & Status</th>
+                <th className="p-4 font-bold text-primary">AI Status</th>
                 <th className="p-4 font-bold text-primary">Resume</th>
                 <th className="p-4 font-bold text-primary text-right">Actions</th>
               </tr>
@@ -138,7 +150,23 @@ export const Candidates = () => {
                     </td>
                     <td className="p-4 text-text-secondary">
                       {candidate.applications?.length > 0 
-                        ? candidate.applications.map(app => app.job?.title).join(', ')
+                        ? candidate.applications.map(app => (
+                            <div key={app.id} className="mb-3 last:mb-0 p-2 bg-background rounded border border-border">
+                              <div className="font-medium text-primary mb-1">{app.job?.title}</div>
+                              <select 
+                                value={app.status}
+                                onChange={(e) => updateStatusMutation.mutate({ applicationId: app.id, status: e.target.value })}
+                                disabled={updateStatusMutation.isPending}
+                                className="w-full text-xs p-1.5 bg-background-secondary border border-border rounded focus:outline-none focus:border-accent text-text-secondary"
+                              >
+                                <option value="APPLIED">Applied</option>
+                                <option value="REVIEWING">Reviewing</option>
+                                <option value="INTERVIEW">Interview</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="HIRED">Hired</option>
+                              </select>
+                            </div>
+                          ))
                         : 'Open Application'
                       }
                     </td>

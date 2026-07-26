@@ -7,6 +7,9 @@ import { Button } from './components/Button';
 import { Bot, Zap, ShieldCheck, Gauge, ArrowRight, User, FileText, CheckCircle2, Building } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 // Pages & Layouts
 import { Login } from './pages/Login';
@@ -25,6 +28,7 @@ import { CandidateLayout } from './layouts/CandidateLayout';
 import { CandidateDashboard } from './pages/candidate/CandidateDashboard';
 import { ResumeBuilder } from './pages/candidate/ResumeBuilder';
 import { Profile } from './pages/candidate/Profile';
+import { MyApplications } from './pages/candidate/MyApplications';
 
 const FeatureIcon = ({ icon: Icon }) => (
   <div className="w-12 h-12 rounded-lg bg-accent-light flex items-center justify-center mb-4">
@@ -157,9 +161,10 @@ const LandingPage = () => (
 
 function App() {
   return (
-    <Router>
-      <Toaster position="top-right" />
-      <Routes>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Toaster position="top-right" />
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
@@ -178,12 +183,14 @@ function App() {
         <Route path="/candidate" element={<ProtectedRoute allowedRoles={['CANDIDATE']} />}>
           <Route element={<CandidateLayout />}>
             <Route index element={<CandidateDashboard />} />
+            <Route path="applications" element={<MyApplications />} />
             <Route path="resume-builder" element={<ResumeBuilder />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
       </Routes>
     </Router>
+    </QueryClientProvider>
   );
 }
 
