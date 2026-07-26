@@ -80,7 +80,7 @@ export const Onboarding = () => {
         toast.success('Profile created successfully!');
         // Small delay so toast is visible
         setTimeout(() => {
-          navigate('/candidate');
+          navigate('/candidate/resume-builder');
         }, 1500);
       } else {
         const data = await res.json();
