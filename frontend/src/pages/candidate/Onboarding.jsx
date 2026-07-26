@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { LocationAutocomplete } from '../../components/LocationAutocomplete';
 import { MapPin, Briefcase, Sparkles, Building, Calendar, Code, CheckCircle2 } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
@@ -143,12 +144,11 @@ export const Onboarding = () => {
                   <p className="text-sm text-text-secondary mb-6">Where are you located and what are you looking for?</p>
                 </div>
                 
-                <Input
+                <LocationAutocomplete
                   label="Location (City, Country)"
-                  icon={MapPin}
-                  placeholder="e.g. Jakarta, Indonesia"
+                  placeholder="Start typing your city..."
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(val) => setLocation(val)}
                   required
                 />
                 
