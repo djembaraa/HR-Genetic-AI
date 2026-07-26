@@ -84,6 +84,18 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' } // Long-lived refresh token
     );
     
+    // Store refresh token in DB
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+    
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: expiresAt
+      }
+    });
+    
     res.json({ token, refreshToken, user: { id: user.id, email: user.email, role: user.role, companyId: user.companyId } });
   } catch (error) {
     console.error('Login Error:', error);
@@ -106,6 +118,12 @@ router.post('/refresh', async (req, res) => {
       const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
       if (!user) return res.status(403).json({ error: 'User not found' });
 
+      // Check DB for refresh token validity
+      const storedToken = await prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+      if (!storedToken) return res.status(403).json({ error: 'Token not found in database' });
+      if (storedToken.revoked) return res.status(403).json({ error: 'Token has been revoked' });
+      if (new Date() > storedToken.expiresAt) return res.status(403).json({ error: 'Token has expired in database' });
+
       const newAccessToken = jwt.sign(
         { userId: user.id, role: user.role, email: user.email, companyId: user.companyId },
         JWT_SECRET,
@@ -116,6 +134,24 @@ router.post('/refresh', async (req, res) => {
       res.status(500).json({ error: 'Failed to refresh token' });
     }
   });
+});
+
+// LOGOUT ROUTE
+router.post('/logout', authenticateToken, async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(400).json({ error: 'No refresh token provided' });
+
+  try {
+    // Revoke the token (or you could just delete it)
+    await prisma.refreshToken.update({
+      where: { token: refreshToken },
+      data: { revoked: true }
+    });
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout Error:', error);
+    res.status(500).json({ error: 'Failed to logout' });
+  }
 });
 
 // ADMIN ONLY: Assign Role to a user (e.g. promote to HR_MANAGER)

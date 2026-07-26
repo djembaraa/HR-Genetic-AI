@@ -29,11 +29,26 @@ model User {
   companyId Int?
   company   Company?   @relation(fields: [companyId], references: [id])
   candidate Candidate?
+  refreshTokens RefreshToken[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
   @@index([companyId])
   @@index([role])
+}
+
+// --- Security ---
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // --- Job Postings ---
