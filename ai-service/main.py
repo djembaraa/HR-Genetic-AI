@@ -15,6 +15,9 @@ from langchain_core.documents import Document
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
+import redis
+from langchain.globals import set_llm_cache
+from langchain_community.cache import RedisCache
 
 class InterceptHandler(logging.Handler):
     def emit(self, record):
@@ -31,6 +34,14 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 load_dotenv()
+
+# Setup Semantic Caching with Redis
+try:
+    redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
+    set_llm_cache(RedisCache(redis_client))
+    logger.info("Semantic Cache (Redis) initialized successfully.")
+except Exception as e:
+    logger.warning(f"Failed to initialize Redis Cache: {e}")
 
 # Retry wrappers for Circuit Breaker / Resilience
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)

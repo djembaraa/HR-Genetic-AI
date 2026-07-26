@@ -1,0 +1,100 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password123
+          POSTGRES_DB: hr_genetic_ai
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies (Backend)
+      run: |
+        cd backend-node
+        npm ci
+        
+    - name: Install dependencies (Frontend)
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Install dependencies (AI Service)
+      run: |
+        cd ai-service
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Setup Prisma DB
+      run: |
+        cd backend-node
+        npx prisma migrate deploy
+      env:
+        DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
+
+    - name: Start Services
+      run: |
+        # Start API Gateway
+        cd backend-node
+        npm start &
+        
+        # Start AI Service
+        cd ../ai-service
+        python main.py &
+        
+        # Start Frontend
+        cd ../frontend
+        npm run dev &
+      env:
+        DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
+        JWT_SECRET: test-secret-key-1234
+        JWT_REFRESH_SECRET: test-refresh-secret-1234
+        AI_SERVICE_URL: http://localhost:8000
+        FRONTEND_URL: http://localhost:5173
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+    - name: Wait for services
+      run: |
+        npx wait-on http://localhost:3000
+        npx wait-on http://localhost:5173
+        npx wait-on http://localhost:8000/api/process-cv
+
+    - name: Run Cypress E2E Tests
+      run: |
+        cd frontend
+        npx cypress run

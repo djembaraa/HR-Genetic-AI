@@ -3,8 +3,8 @@ const Redis = require('ioredis');
 const FormData = require('form-data');
 const fs = require('fs');
 
-// Use the local docker-compose Redis connection
-const connection = new Redis('redis://localhost:6379', {
+// Use the environment Redis connection
+const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null
 });
 

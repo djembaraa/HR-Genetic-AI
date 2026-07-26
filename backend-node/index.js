@@ -13,7 +13,8 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { Queue } = require('bullmq');
-const aiQueue = new Queue('ai-jobs', { connection: { host: 'localhost', port: 6379 } });
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const aiQueue = new Queue('ai-jobs', { connection: new require('ioredis')(redisUrl, { maxRetriesPerRequest: null }) });
 const prisma = require('./lib/prisma');
 const fs = require('fs');
 const path = require('path');
@@ -163,11 +164,17 @@ app.post('/api/candidates/upload', authenticateToken, requireRole('ADMIN', 'HR_M
             }
         });
 
-        // 2. Enqueue the PDF vectorization job to BullMQ
+        // 2. Enqueue the PDF vectorization job to BullMQ with Exponential Backoff
         await aiQueue.add('vectorize-cv', {
             candidateId: candidate.id,
             companyId: companyId,
             filePath: req.file.path
+        }, {
+            attempts: 3,
+            backoff: {
+                type: 'exponential',
+                delay: 5000
+            }
         });
         
         logger.info(`Enqueued CV vectorization for candidate ${candidate.id}`);
