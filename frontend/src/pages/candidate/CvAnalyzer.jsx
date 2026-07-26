@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { UploadCloud, FileText, CheckCircle, AlertTriangle, AlertCircle, Wand2, X } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, AlertTriangle, AlertCircle, Wand2, X, Sparkles } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,7 @@ export const CvAnalyzer = () => {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [result, setResult] = useState(null);
 
   const handleDragOver = (e) => {
@@ -75,6 +76,36 @@ export const CvAnalyzer = () => {
       toast.error('Error connecting to server.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExtract = async () => {
+    if (!file) return;
+
+    setExtracting(true);
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetchApi('/api/candidate/extract-cv', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (res.ok) {
+        toast.success('Profile auto-filled successfully! Redirecting...');
+        setTimeout(() => window.location.href = '/candidate/resume-builder', 1500);
+      } else {
+        const err = await res.json();
+        toast.error(err.error || 'Failed to extract CV data.');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error connecting to server.');
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -196,6 +227,16 @@ export const CvAnalyzer = () => {
                   </li>
                 ))}
               </ul>
+            </Card>
+
+            <Card className="bg-accent/5 border-accent/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-primary flex items-center gap-2"><Sparkles className="text-accent" size={20} /> Auto-Fill Profile</h3>
+                <p className="text-sm text-text-secondary">Save time! Let AI extract all your experiences, skills, and education to fill your Resume Builder profile automatically.</p>
+              </div>
+              <Button onClick={handleExtract} disabled={extracting} className="shrink-0 w-full sm:w-auto bg-accent hover:bg-accent-hover text-white">
+                {extracting ? 'Extracting...' : 'Auto-Fill My Profile'}
+              </Button>
             </Card>
           </div>
         )}

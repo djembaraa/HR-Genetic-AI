@@ -5,8 +5,121 @@ const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const FormData = require('form-data');
 const { z } = require('zod');
+const multer = require('multer');
+const fs = require('fs');
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
+
+// --- Auto-Fill Candidate Profile from CV ---
+router.post('/extract-cv', authenticateToken, requireRole('CANDIDATE'), upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'PDF file is required' });
+
+  try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const blob = new Blob([fileBuffer], { type: req.file.mimetype || 'application/pdf' });
+    const formData = new FormData();
+    formData.append('file', blob, req.file.originalname);
+
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+    const response = await fetch(`${AI_SERVICE_URL}/api/extract-cv-pdf`, {
+      method: 'POST',
+      headers: { 'x-api-key': AI_API_KEY },
+      body: formData
+    });
+
+    if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    if (!response.ok) throw new Error(`AI service returned ${response.status}`);
+
+    const extractedData = await response.json();
+    
+    // Update DB
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    if (!candidate) return res.status(404).json({ error: "Candidate not found" });
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Update basic info if empty
+      const updateData = {};
+      if (extractedData.location && !candidate.location) updateData.location = extractedData.location;
+      if (extractedData.summary && !candidate.summary) updateData.summary = extractedData.summary;
+      if (Object.keys(updateData).length > 0) {
+         await tx.candidate.update({ where: { id: candidate.id }, data: updateData });
+      }
+
+      // 2. Add skills (avoiding duplicates by just adding new ones since they might have old ones)
+      if (extractedData.skills && extractedData.skills.length > 0) {
+         const existingSkills = await tx.skill.findMany({ where: { candidateId: candidate.id } });
+         const existingNames = new Set(existingSkills.map(s => s.name.toLowerCase()));
+         const newSkills = extractedData.skills.filter(s => !existingNames.has(s.toLowerCase()));
+         
+         if (newSkills.length > 0) {
+           await tx.skill.createMany({
+              data: newSkills.map(s => ({
+                candidateId: candidate.id,
+                name: s,
+                proficiency: 'INTERMEDIATE'
+              }))
+           });
+         }
+      }
+
+      // 3. Add experiences (we clear existing to prevent duplicates during extraction)
+      if (extractedData.experiences && extractedData.experiences.length > 0) {
+         await tx.experience.deleteMany({ where: { candidateId: candidate.id } });
+         await tx.experience.createMany({
+            data: extractedData.experiences.map((exp, i) => {
+              const startDate = exp.startDate ? new Date(exp.startDate) : new Date();
+              const endDate = exp.endDate ? new Date(exp.endDate) : null;
+              
+              const safeStartDate = isNaN(startDate) ? new Date() : startDate;
+              const safeEndDate = endDate && isNaN(endDate) ? null : endDate;
+              
+              return {
+                candidateId: candidate.id,
+                company: exp.company || "Unknown",
+                title: exp.title || "Unknown",
+                description: exp.description || "",
+                startDate: safeStartDate,
+                endDate: safeEndDate,
+                sortOrder: i
+              }
+            })
+         });
+      }
+
+      // 4. Add educations
+      if (extractedData.educations && extractedData.educations.length > 0) {
+         await tx.education.deleteMany({ where: { candidateId: candidate.id } });
+         await tx.education.createMany({
+            data: extractedData.educations.map((edu, i) => {
+              const startDate = edu.startDate ? new Date(edu.startDate) : new Date();
+              const endDate = edu.endDate ? new Date(edu.endDate) : null;
+              
+              const safeStartDate = isNaN(startDate) ? new Date() : startDate;
+              const safeEndDate = endDate && isNaN(endDate) ? null : endDate;
+              
+              return {
+                candidateId: candidate.id,
+                institution: edu.institution || "Unknown",
+                degree: edu.degree || "Unknown",
+                field: edu.field || "Unknown",
+                startDate: safeStartDate,
+                endDate: safeEndDate,
+                sortOrder: i
+              }
+            })
+         });
+      }
+    });
+
+    res.json({ message: "Profile automatically filled from CV!" });
+  } catch (error) {
+    console.error('Error proxying AI CV Extraction:', error.message);
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: 'Failed to extract CV with AI' });
+  }
+});
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name is required").optional(),

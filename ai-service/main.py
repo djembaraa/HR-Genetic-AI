@@ -311,6 +311,59 @@ def analyze_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_
         if os.path.exists(file_path):
             os.remove(file_path)
 
+@app.post("/api/extract-cv-pdf")
+def extract_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_key)):
+    """
+    Extracts structured data (experiences, educations, skills) from a CV PDF.
+    """
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+    
+    file_path = os.path.join(UPLOAD_DIR, f"extract_{file.filename}")
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        loader = PyPDFLoader(file_path)
+        docs = loader.load()
+        text = "\n".join([doc.page_content for doc in docs])
+        
+        if len(text.strip()) == 0:
+            raise ValueError("Could not extract any text from the PDF.")
+            
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)
+        prompt = (
+            "You are an expert Data Extractor. "
+            "Extract the following candidate information from the CV text. "
+            "Return ONLY a valid JSON object with EXACTLY these keys: "
+            "\"summary\" (string), "
+            "\"location\" (string), "
+            "\"skills\" (array of strings), "
+            "\"experiences\" (array of objects with keys: \"company\" (str), \"title\" (str), \"description\" (str), \"startDate\" (YYYY-MM or just year string), \"endDate\" (YYYY-MM or year string, null if present)), "
+            "\"educations\" (array of objects with keys: \"institution\" (str), \"degree\" (str), \"field\" (str), \"startDate\" (YYYY-MM or year), \"endDate\" (YYYY-MM or year)). "
+            "Do not include any markdown headers like ```json.\n\n"
+            f"CV Text:\n{text[:15000]}"
+        )
+        
+        response = invoke_llm_with_retry(llm, prompt)
+        
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        result = json.loads(content)
+        logger.info(f"CV extraction completed.")
+        return result
+    except Exception as e:
+        logger.error(f"Error extracting CV PDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
 @app.post("/api/chat")
 def chat_with_agent(
     query: str = Form(...), 
