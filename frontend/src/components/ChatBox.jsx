@@ -48,12 +48,12 @@ export const ChatBox = () => {
   };
 
   return (
-    <div className="flex flex-col h-[500px] border border-border rounded-xl bg-white shadow-sm overflow-hidden">
+    <div className="flex flex-col h-[500px] border border-border rounded-xl bg-background shadow-sm overflow-hidden">
       <div className="bg-background-secondary p-4 border-b border-border font-semibold flex items-center gap-2">
         <Bot className="w-5 h-5 text-accent" /> AI Assistant
       </div>
       
-      <div className="flex-grow p-4 overflow-y-auto bg-white flex flex-col gap-4" role="log" aria-live="polite">
+      <div className="flex-grow p-4 overflow-y-auto bg-background flex flex-col gap-4" role="log" aria-live="polite">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'self-end flex-row-reverse' : 'self-start'}`}>
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-accent-light text-accent'}`}>
@@ -80,11 +80,12 @@ export const ChatBox = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-4 bg-white border-t border-border">
+      <div className="p-4 bg-background border-t border-border">
         <form onSubmit={handleChat} className="flex gap-2" aria-label="Chat Form">
           <input 
             type="text" 
-            className="flex-1 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all" 
+            maxLength={500}
+            className="flex-1 px-4 py-2 bg-background text-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all" 
             placeholder="Ask: 'Who is good at React?'" 
             value={chatInput} 
             onChange={e => setChatInput(e.target.value)} 

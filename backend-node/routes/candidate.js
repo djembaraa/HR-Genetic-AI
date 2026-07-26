@@ -3,6 +3,7 @@ const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const FormData = require('form-data');
 
 const router = express.Router();
 
@@ -85,6 +86,55 @@ router.put('/profile', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update candidate profile' });
+  }
+});
+
+// Get AI Job Recommendations
+router.get('/recommendations', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({
+      where: { userId: req.user.userId },
+      include: {
+        experiences: { orderBy: { sortOrder: 'asc' } },
+        educations: { orderBy: { sortOrder: 'asc' } },
+        skills: true
+      }
+    });
+
+    if (!candidate) return res.status(404).json({ error: 'Candidate profile not found' });
+
+    let profileText = `Name: ${candidate.name || 'Unknown'}\nSummary: ${candidate.summary || ''}\n\n`;
+    if (candidate.experiences?.length > 0) {
+      profileText += "EXPERIENCE:\n" + candidate.experiences.map(e => `${e.title} at ${e.company}\n${e.description}`).join('\n\n') + "\n\n";
+    }
+    if (candidate.skills?.length > 0) {
+      profileText += "SKILLS:\n" + candidate.skills.map(s => s.name).join(', ') + "\n\n";
+    }
+
+    const jobs = await prisma.job.findMany({
+      where: { status: 'OPEN' },
+      select: { id: true, title: true, department: true, description: true }
+    });
+
+    const formData = new FormData();
+    formData.append('profile_text', profileText);
+    formData.append('jobs_json', JSON.stringify(jobs));
+
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const response = await fetch(`${AI_SERVICE_URL}/api/recommend-jobs`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI Service returned ${response.status}`);
+    }
+
+    const result = await response.json();
+    res.json(result);
+  } catch (error) {
+    console.error('Recommendations error:', error);
+    res.status(500).json({ error: 'Failed to fetch recommendations' });
   }
 });
 

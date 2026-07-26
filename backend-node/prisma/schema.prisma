@@ -20,11 +20,18 @@ model Company {
 
 // --- Authentication & Authorization ---
 
+enum Role {
+  ADMIN
+  HR_MANAGER
+  RECRUITER
+  CANDIDATE
+}
+
 model User {
   id        Int        @id @default(autoincrement())
   email     String     @unique
   password  String
-  role      String     @default("CANDIDATE") // ADMIN, HR_MANAGER, RECRUITER, CANDIDATE
+  role      Role       @default(CANDIDATE) // ADMIN, HR_MANAGER, RECRUITER, CANDIDATE
   companyId Int?
   company   Company?   @relation(fields: [companyId], references: [id])
   candidate Candidate?
@@ -83,7 +90,6 @@ model Candidate {
   location             String?
   summary              String?
   cvFileName           String?
-  cvUrl                String?      // Re-added cvUrl from legacy schema to prevent code breakage
   vectorizationStatus  String       @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
   experiences          Experience[]
   educations           Education[]

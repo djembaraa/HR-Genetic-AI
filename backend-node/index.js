@@ -62,6 +62,9 @@ const httpRequestDurationMicroseconds = new promClient.Histogram({
 });
 
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+
+app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
 app.use(express.json()); // Essential for receiving JSON in req.body
 app.use(cookieParser());
@@ -133,7 +136,7 @@ app.get('/', (req, res) => {
 });
 
 // Example of a Protected Route (Admin Only)
-app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN'), async (req, res) => {
+app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
   // Dashboard mock stats
   res.json({
     message: `Welcome Admin ${req.user.email}`,
@@ -144,51 +147,7 @@ app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN'), async (
   });
 });
 
-// Endpoint to handle Candidate CV Upload (B2B HR Flow)
-app.post('/api/candidates/upload', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), upload.single('cv'), async (req, res) => {
-    try {
-        const { name, email, applied_job_id } = req.body;
-        const companyId = req.user.companyId;
-        
-        if (!req.file) {
-            return res.status(400).json({ error: 'CV file is required' });
-        }
 
-        // 1. Save candidate to Database (PostgreSQL via Prisma)
-        const candidate = await prisma.candidate.create({
-            data: {
-                name,
-                email,
-                appliedJobId: applied_job_id ? parseInt(applied_job_id) : null,
-                cvUrl: req.file.filename,
-                companyId: companyId
-            }
-        });
-
-        // 2. Enqueue the PDF vectorization job to BullMQ with Exponential Backoff
-        await aiQueue.add('vectorize-cv', {
-            candidateId: candidate.id,
-            companyId: companyId,
-            filePath: req.file.path
-        }, {
-            attempts: 3,
-            backoff: {
-                type: 'exponential',
-                delay: 5000
-            }
-        });
-        
-        logger.info(`Enqueued CV vectorization for candidate ${candidate.id}`);
-
-        res.status(202).json({
-            message: 'Candidate application submitted and CV is queued for AI processing.',
-            candidate
-        });
-    } catch (error) {
-        logger.error('Upload Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
 
 // AI Agent chat route moved to routes/hr.js
 

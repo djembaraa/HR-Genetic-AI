@@ -74,7 +74,16 @@ export const AdminDashboard = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="4" className="py-4 text-center">Loading...</td></tr>
+                <>
+                  {[1, 2, 3].map(i => (
+                    <tr key={`skel-admin-${i}`} className="animate-pulse border-b border-border/50">
+                      <td className="py-4"><div className="w-32 h-5 bg-border/20 rounded-md"></div></td>
+                      <td className="py-4"><div className="w-40 h-5 bg-border/20 rounded-md"></div></td>
+                      <td className="py-4"><div className="w-24 h-5 bg-border/20 rounded-md"></div></td>
+                      <td className="py-4"><div className="w-20 h-6 bg-border/20 rounded-full"></div></td>
+                    </tr>
+                  ))}
+                </>
               ) : recentCandidates.length === 0 ? (
                 <tr><td colSpan="4" className="py-4 text-center text-text-light">No candidates found in database</td></tr>
               ) : (

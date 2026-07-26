@@ -115,6 +115,11 @@ export const ResumeBuilder = () => {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
     
+    if (profile?.skills?.some(s => s.name.toLowerCase() === data.name.trim().toLowerCase())) {
+      alert(`Skill '${data.name}' has already been added.`);
+      return;
+    }
+    
     try {
       const res = await fetch('http://localhost:3000/api/candidate/skill', {
         method: 'POST',
@@ -379,12 +384,11 @@ export const ResumeBuilder = () => {
           
           <form onSubmit={addSkill} className="flex gap-4 mb-8 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-primary mb-1">Skill Name</label>
-              <input required name="name" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary" placeholder="e.g. React.js" />
+              <Input required name="name" type="text" label="Skill Name" placeholder="e.g. React.js" />
             </div>
             <div className="w-48">
-              <label className="block text-sm font-medium text-primary mb-1">Proficiency</label>
-              <select name="proficiency" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary">
+              <label className="block text-sm font-medium text-primary mb-1.5">Proficiency</label>
+              <select name="proficiency" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200">
                 <option value="BEGINNER">Beginner</option>
                 <option value="INTERMEDIATE">Intermediate</option>
                 <option value="EXPERT">Expert</option>

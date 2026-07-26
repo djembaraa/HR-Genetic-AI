@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import shutil
 from dotenv import load_dotenv
+import json
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
@@ -208,6 +209,43 @@ def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_
     except Exception as e:
         logger.error(f"Agent Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/recommend-jobs")
+def recommend_jobs(profile_text: str = Form(...), jobs_json: str = Form(...)):
+    """
+    Evaluates candidate profile against available jobs and returns a list of recommended job IDs.
+    """
+    try:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+        prompt = (
+            "You are an expert AI Career Matchmaker. "
+            "I will provide a candidate's profile and a list of available jobs in JSON format. "
+            "Your task is to analyze the profile and identify the best matching jobs (up to 5). "
+            "Return ONLY a valid JSON array containing the recommended job IDs (integers). "
+            "Do not include markdown blocks, just the raw JSON array. If no jobs match, return an empty array [].\n\n"
+            f"Candidate Profile:\n{profile_text}\n\n"
+            f"Available Jobs JSON:\n{jobs_json}"
+        )
+        response = invoke_llm_with_retry(llm, prompt)
+        
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        recommended_ids = json.loads(content)
+        
+        if not isinstance(recommended_ids, list):
+            recommended_ids = []
+            
+        recommended_ids = [int(jid) for jid in recommended_ids if str(jid).isdigit()]
+        
+        logger.info(f"Generated {len(recommended_ids)} recommendations.")
+        return {"recommended_job_ids": recommended_ids}
+    except Exception as e:
+        logger.error(f"Error recommending jobs: {e}")
+        return {"recommended_job_ids": []}
 
 if __name__ == "__main__":
     import uvicorn

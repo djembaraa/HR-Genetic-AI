@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -48,6 +49,11 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
+      <Helmet>
+        <title>Login | NexHire AI</title>
+        <meta name="description" content="Log in to your NexHire AI account to manage your jobs or candidate profile." />
+      </Helmet>
+      
       {/* Background Orbs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-border/40 rounded-full blur-3xl -z-10 translate-x-[-20%] translate-y-[-20%]"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-border/40 rounded-full blur-3xl -z-10 translate-x-[20%] translate-y-[20%]"></div>

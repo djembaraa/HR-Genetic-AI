@@ -104,7 +104,19 @@ export const Candidates = () => {
                   (candidate.applications?.some(app => (app.job?.title || '').toLowerCase().includes(searchQuery.toLowerCase())))
                 );
 
-                if (loading) return <tr><td colSpan="5" className="p-8 text-center text-text-secondary">Loading candidates...</td></tr>;
+                if (loading) return (
+                  <>
+                    {[1, 2, 3].map(i => (
+                      <tr key={`skel-${i}`} className="animate-pulse">
+                        <td className="p-4"><div className="w-48 h-10 bg-border/20 rounded-md"></div></td>
+                        <td className="p-4"><div className="w-32 h-6 bg-border/20 rounded-md"></div></td>
+                        <td className="p-4"><div className="w-24 h-6 bg-border/20 rounded-md"></div></td>
+                        <td className="p-4"><div className="w-20 h-8 bg-border/20 rounded-md"></div></td>
+                        <td className="p-4 text-right"><div className="w-24 h-8 bg-border/20 rounded-md inline-block"></div></td>
+                      </tr>
+                    ))}
+                  </>
+                );
                 if (filteredCandidates.length === 0) return <tr><td colSpan="5" className="p-8 text-center text-text-secondary">No candidates found for your company.</td></tr>;
 
                 return filteredCandidates.map(candidate => (
@@ -145,7 +157,7 @@ export const Candidates = () => {
                       </Button>
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="secondary" size="sm" onClick={() => alert('Full profile view coming in Phase 5!')}>View Profile</Button>
+                      <Button variant="secondary" size="sm" disabled className="opacity-50 cursor-not-allowed" title="Coming in Phase 5">View Profile</Button>
                     </td>
                   </tr>
                 ));

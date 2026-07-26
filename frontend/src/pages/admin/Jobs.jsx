@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Plus, Trash2, Edit2, Briefcase, MapPin } from 'lucide-react';
+import { Input } from '../../components/Input';
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -111,23 +112,14 @@ export const Jobs = () => {
           <h2 className="text-xl font-bold text-primary mb-6">{editingJob ? 'Update Job Posting' : 'Create New Job Posting'}</h2>
           <form id="job-form" onSubmit={handleSaveJob} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">Job Title</label>
-                <input required name="title" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary" placeholder="e.g. Senior Developer" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">Department</label>
-                <input required name="department" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary" placeholder="e.g. Engineering" />
-              </div>
+              <Input required name="title" label="Job Title" type="text" placeholder="e.g. Senior Developer" />
+              <Input required name="department" label="Department" type="text" placeholder="e.g. Engineering" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input name="location" label="Location" type="text" placeholder="e.g. Remote" />
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">Location</label>
-                <input name="location" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary" placeholder="e.g. Remote" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-primary mb-1">Type</label>
-                <select name="type" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary">
+                <label className="block text-sm font-medium text-primary mb-1.5">Type</label>
+                <select name="type" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200">
                   <option value="FULL_TIME">Full Time</option>
                   <option value="PART_TIME">Part Time</option>
                   <option value="CONTRACT">Contract</option>
@@ -135,16 +127,16 @@ export const Jobs = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">Status</label>
-                <select name="status" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary">
+                <label className="block text-sm font-medium text-primary mb-1.5">Status</label>
+                <select name="status" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200">
                   <option value="OPEN">OPEN</option>
                   <option value="CLOSED">CLOSED</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-primary mb-1">Description</label>
-              <textarea required name="description" rows={5} className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary resize-none" placeholder="Job responsibilities and requirements..."></textarea>
+              <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+              <textarea required name="description" rows={5} className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary resize-none focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200" placeholder="Job responsibilities and requirements..."></textarea>
             </div>
             <div className="flex justify-end pt-4 gap-2">
                {editingJob && (
@@ -157,7 +149,11 @@ export const Jobs = () => {
       )}
 
       {loading ? (
-        <div className="text-center p-8 text-text-secondary">Loading jobs...</div>
+        <div className="grid grid-cols-1 gap-4">
+          {[1, 2].map(i => (
+            <Card key={`skel-job-${i}`} className="animate-pulse h-24 bg-border/20"></Card>
+          ))}
+        </div>
       ) : jobs.length === 0 ? (
         <div className="text-center p-12 border border-border rounded-lg bg-background-secondary text-text-secondary">
           No jobs found. Click "Create Job" to get started.

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { MapPin, Building, Search, Briefcase, CheckCircle2 } from 'lucide-react';
+import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
 
 export const CandidateDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -9,6 +9,8 @@ export const CandidateDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [applyingJobId, setApplyingJobId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [recommendedJobIds, setRecommendedJobIds] = useState([]);
+  const [isAiMatching, setIsAiMatching] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -69,6 +71,30 @@ export const CandidateDashboard = () => {
     }
   };
 
+  const handleAutoMatch = async () => {
+    setIsAiMatching(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/candidate/recommendations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRecommendedJobIds(data.recommended_job_ids || []);
+        if (data.recommended_job_ids?.length === 0) {
+          alert('No specific AI matches found. Try adding more skills to your profile!');
+        }
+      } else {
+        alert('Failed to get recommendations.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error fetching recommendations.');
+    } finally {
+      setIsAiMatching(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -77,7 +103,18 @@ export const CandidateDashboard = () => {
           <p className="text-text-secondary">Discover your next career opportunity.</p>
         </div>
         
-        <div className="relative w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={handleAutoMatch} 
+            disabled={isAiMatching || loading}
+            className="w-full sm:w-auto border-accent/30 text-accent hover:bg-accent/10 whitespace-nowrap"
+          >
+            <Sparkles size={16} className={isAiMatching ? "animate-spin" : ""} />
+            {isAiMatching ? 'Matching...' : 'AI Auto-Match'}
+          </Button>
+          
+          <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
           <input 
             type="text" 
@@ -87,6 +124,7 @@ export const CandidateDashboard = () => {
             className="w-full sm:w-64 pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
           />
         </div>
+      </div>
       </div>
 
       {loading ? (
@@ -98,11 +136,20 @@ export const CandidateDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {(() => {
-            const filteredJobs = jobs.filter(job => 
+            let filteredJobs = jobs.filter(job => 
               job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
               (job.company?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
               job.department.toLowerCase().includes(searchQuery.toLowerCase())
             );
+
+            // Sort so recommended jobs are at the top
+            if (recommendedJobIds.length > 0) {
+              filteredJobs = [...filteredJobs].sort((a, b) => {
+                const aRec = recommendedJobIds.includes(a.id) ? 1 : 0;
+                const bRec = recommendedJobIds.includes(b.id) ? 1 : 0;
+                return bRec - aRec;
+              });
+            }
 
             if (filteredJobs.length === 0) {
               return (
@@ -115,13 +162,19 @@ export const CandidateDashboard = () => {
 
             return filteredJobs.map(job => {
               const isApplied = candidateProfile?.applications?.some(app => app.jobId === job.id);
+              const isRecommended = recommendedJobIds.includes(job.id);
               
               return (
-                <Card key={job.id} hoverable={!isApplied} className={`flex flex-col h-full ${isApplied ? 'border-accent/50 shadow-sm ring-1 ring-accent/20' : ''}`}>
+                <Card key={job.id} hoverable={!isApplied} className={`flex flex-col h-full relative ${isApplied ? 'border-accent/50 shadow-sm ring-1 ring-accent/20' : ''} ${isRecommended && !isApplied ? 'border-amber-400/50 shadow-sm ring-1 ring-amber-400/20' : ''}`}>
+                  {isRecommended && !isApplied && (
+                    <div className="absolute -top-3 -right-3 bg-amber-400 text-black text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                      <Sparkles size={12} /> Top Match
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className="flex justify-between items-start mb-1">
-                      <h3 className="text-lg font-bold text-primary">{job.title}</h3>
-                      {isApplied && <CheckCircle2 size={20} className="text-accent" />}
+                      <h3 className="text-lg font-bold text-primary pr-4">{job.title}</h3>
+                      {isApplied && <CheckCircle2 size={20} className="text-accent shrink-0" />}
                     </div>
                     <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
                       <Building size={14} />

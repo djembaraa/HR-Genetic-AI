@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Root runner for HR Genetic AI Microservices",
   "scripts": {
-    "dev": "concurrently -n \"API-GATEWAY,FRONTEND,AI-SERVICE\" -c \"bgGreen.bold,bgCyan.bold,bgYellow.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:ai\"",
+    "dev": "concurrently -n \"API-GATEWAY,FRONTEND,AI-SERVICE,DB-STUDIO\" -c \"bgGreen.bold,bgCyan.bold,bgYellow.bold,bgMagenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:ai\" \"npm run dev:db\"",
     "dev:backend": "cd backend-node && node index.js",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:ai": "cd ai-service && python main.py"
+    "dev:ai": "cd ai-service && .\\venv\\Scripts\\python.exe main.py",
+    "dev:db": "cd backend-node && npx prisma studio"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
