@@ -7,7 +7,9 @@
     "dev:backend": "cd backend-node && node index.js",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:ai": "cd ai-service && .\\venv\\Scripts\\python.exe main.py",
-    "dev:db": "cd backend-node && npx prisma studio"
+    "dev:db": "cd backend-node && npx prisma studio",
+    "docker": "docker-compose up -d --build",
+    "docker:down": "docker-compose down"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
