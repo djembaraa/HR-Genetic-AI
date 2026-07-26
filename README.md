@@ -52,11 +52,15 @@ graph TD
     end
     
     subgraph AI Microservice
-    Worker -->|Send PDF/Text + API Key| FastAPI(Python FastAPI)
+    FastAPI(Python FastAPI)
+    Chroma[(ChromaDB)]
+    Gemini[Google Gemini 2.5 Flash]
+    
+    Worker -->|Send PDF/Text + API Key| FastAPI
     Gateway -->|Chat Query + API Key| FastAPI
     FastAPI <-->|Semantic Cache| Redis
-    FastAPI <-->|Store/Search Vectors| ChromaDB[(ChromaDB)]
-    FastAPI <-->|Embeddings/LLM| Gemini[Google Gemini 2.5 Flash]
+    FastAPI <-->|Store/Search Vectors| Chroma
+    FastAPI <-->|Embeddings/LLM| Gemini
     end
 ```
 
@@ -105,4 +109,6 @@ The entire application is containerized for a seamless developer experience.
 ---
 
 ## 👤 Author
-Developed by a passionate AI Engineer focusing on building scalable, intelligent systems. Open to opportunities in Purwokerto and beyond!
+Developed by **Djembar Arafat**. 
+Open to AI Engineering opportunities in Purwokerto and beyond!
+🌐 [djembara.com](https://djembara.com)
