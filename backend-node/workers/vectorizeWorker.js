@@ -1,6 +1,7 @@
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const FormData = require('form-data');
+const fs = require('fs');
 
 // Use the local docker-compose Redis connection
 const connection = new Redis('redis://localhost:6379', {
@@ -10,7 +11,42 @@ const connection = new Redis('redis://localhost:6379', {
 const worker = new Worker('ai-jobs', async (job) => {
   console.log(`[BullMQ] Processing job ${job.id} of type ${job.name}`);
   
-  if (job.name === 'vectorize-profile') {
+  console.log(`[BullMQ] Processing job ${job.id} of type ${job.name}`);
+  
+  if (job.name === 'vectorize-cv') {
+    const { candidateId, companyId, filePath } = job.data;
+    console.log(`[BullMQ] Started vectorizing CV for candidate ${candidateId}...`);
+    
+    try {
+      const formData = new FormData();
+      formData.append('candidate_id', candidateId.toString());
+      formData.append('company_id', companyId.toString());
+      formData.append('file', fs.createReadStream(filePath));
+      
+      const response = await fetch('http://localhost:8000/api/process-cv', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`AI Service returned ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log(`[BullMQ] Completed vectorizing CV for candidate ${candidateId}: ${result.message}`);
+      
+      // Cleanup the temporary PDF file
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`[BullMQ] Cleaned up temporary file: ${filePath}`);
+      }
+      
+      return { status: 'success', candidateId };
+    } catch (error) {
+      console.error(`[BullMQ] Failed to vectorize CV for candidate ${candidateId}`, error);
+      throw error;
+    }
+  } else if (job.name === 'vectorize-profile') {
     const { candidateId, profileData } = job.data;
     
     console.log(`[BullMQ] Started vectorizing profile for candidate ${candidateId}...`);
@@ -42,6 +78,7 @@ const worker = new Worker('ai-jobs', async (job) => {
     // Send to Python AI Service
     const formData = new FormData();
     formData.append('candidate_id', candidateId.toString());
+    formData.append('company_id', job.data.companyId ? job.data.companyId.toString() : 'default_company');
     formData.append('profile_text', profileText);
     
     try {

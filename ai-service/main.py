@@ -63,7 +63,7 @@ def read_root():
     return {"message": "AI ATS Service is running!"}
 
 @app.post("/api/process-cv")
-def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
+def process_cv(candidate_id: str = Form(...), company_id: str = Form(...), file: UploadFile = File(...)):
     """
     Receives a CV PDF from the Node backend, chunks it, and saves embeddings to ChromaDB.
     """
@@ -87,6 +87,7 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
         # Add candidate_id to metadata
         for split in splits:
             split.metadata["candidate_id"] = candidate_id
+            split.metadata["company_id"] = company_id
             
         # 3. Create Embeddings and Store in ChromaDB
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
@@ -103,13 +104,13 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
 @app.post("/api/vectorize-profile")
-def vectorize_profile(candidate_id: str = Form(...), profile_text: str = Form(...)):
+def vectorize_profile(candidate_id: str = Form(...), company_id: str = Form(...), profile_text: str = Form(...)):
     """
     Receives structured profile text from Node, chunks it, and saves to ChromaDB.
     """
     try:
         # Create a document from the structured text
-        docs = [Document(page_content=profile_text, metadata={"candidate_id": candidate_id})]
+        docs = [Document(page_content=profile_text, metadata={"candidate_id": candidate_id, "company_id": company_id})]
         
         # Chunk text
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -151,7 +152,7 @@ def enhance_resume(text: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
-def chat_with_agent(query: str = Form(...), thread_id: str = Form("default")):
+def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_id: str = Form("default")):
     """
     Chat endpoint for HR to ask questions about the candidates using RAG agent with memory.
     """
@@ -165,7 +166,7 @@ def chat_with_agent(query: str = Form(...), thread_id: str = Form("default")):
              return {"reply": "Sorry, the CV database is empty. Please upload a CV or publish a profile first."}
              
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5, "filter": {"company_id": company_id}})
         
         # 2. Create Retriever Tool
         tool = create_retriever_tool(

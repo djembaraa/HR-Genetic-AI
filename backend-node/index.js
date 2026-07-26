@@ -12,6 +12,8 @@ for (const envVar of requiredEnvVars) {
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const { Queue } = require('bullmq');
+const aiQueue = new Queue('ai-jobs', { connection: { host: 'localhost', port: 6379 } });
 const prisma = require('./lib/prisma');
 const fs = require('fs');
 const path = require('path');
@@ -140,10 +142,11 @@ app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN'), async (
   });
 });
 
-// Endpoint to handle Candidate CV Upload
-app.post('/api/candidates/upload', upload.single('cv'), async (req, res) => {
+// Endpoint to handle Candidate CV Upload (B2B HR Flow)
+app.post('/api/candidates/upload', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), upload.single('cv'), async (req, res) => {
     try {
         const { name, email, applied_job_id } = req.body;
+        const companyId = req.user.companyId;
         
         if (!req.file) {
             return res.status(400).json({ error: 'CV file is required' });
@@ -155,28 +158,23 @@ app.post('/api/candidates/upload', upload.single('cv'), async (req, res) => {
                 name,
                 email,
                 appliedJobId: applied_job_id ? parseInt(applied_job_id) : null,
-                cvUrl: req.file.filename // Fix S-08: Path Disclosure
+                cvUrl: req.file.filename,
+                companyId: companyId
             }
         });
 
-        // 2. Forward the PDF to the AI Microservice (FastAPI) for processing
-        const formData = new FormData();
-        formData.append('candidate_id', candidate.id.toString());
-        formData.append('file', fs.createReadStream(req.file.path));
-
-        const aiResponse = await fetch(`${AI_SERVICE_URL}/api/process-cv`, {
-            method: 'POST',
-            body: formData,
+        // 2. Enqueue the PDF vectorization job to BullMQ
+        await aiQueue.add('vectorize-cv', {
+            candidateId: candidate.id,
+            companyId: companyId,
+            filePath: req.file.path
         });
-
-        const aiResult = await aiResponse.json();
         
-        logger.info(`Processed CV upload for candidate ${candidate.id}`);
+        logger.info(`Enqueued CV vectorization for candidate ${candidate.id}`);
 
-        res.json({
-            message: 'Candidate application submitted and CV is being processed by AI.',
-            candidate,
-            ai_status: aiResult
+        res.status(202).json({
+            message: 'Candidate application submitted and CV is queued for AI processing.',
+            candidate
         });
     } catch (error) {
         logger.error('Upload Error:', error);
