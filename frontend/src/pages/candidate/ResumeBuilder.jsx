@@ -126,8 +126,8 @@ export const ResumeBuilder = () => {
       {/* AI Modal */}
       {showAiModal && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-2xl w-full border-accent border-t-4 shadow-2xl relative">
-            <button onClick={() => setShowAiModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary">
+          <Card className="max-w-2xl w-full border-accent border-t-4 shadow-2xl relative bg-gradient-to-br from-background to-background-tertiary">
+            <button id="btn-close-ai-modal" onClick={() => setShowAiModal(false)} className="absolute top-4 right-4 text-text-muted hover:text-primary">
               <X size={20} />
             </button>
             <h2 className="text-2xl font-bold text-primary mb-2 flex items-center gap-2">
@@ -150,8 +150,8 @@ export const ResumeBuilder = () => {
 
             {!aiLoading && (
               <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setShowAiModal(false)}>Reject</Button>
-                <Button onClick={acceptAiSuggestion} className="flex items-center gap-2">
+                <Button id="btn-reject-ai" variant="outline" onClick={() => setShowAiModal(false)}>Reject</Button>
+                <Button id="btn-accept-ai" onClick={acceptAiSuggestion} className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90">
                   <Check size={18} /> Accept Suggestion
                 </Button>
               </div>
@@ -176,19 +176,19 @@ export const ResumeBuilder = () => {
           
           <form onSubmit={addExperience} className="space-y-4 mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input required name="company" type="text" label="Company Name" placeholder="e.g. Google" />
-                <Input required name="title" type="text" label="Job Title" placeholder="e.g. Software Engineer" />
+                <Input id="input-company" required name="company" type="text" label="Company Name" placeholder="e.g. Google" />
+                <Input id="input-title" required name="title" type="text" label="Job Title" placeholder="e.g. Software Engineer" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input required name="startDate" type="date" label="Start Date" />
-                <Input name="endDate" type="date" label="End Date" />
+                <Input id="input-start-date" required name="startDate" type="date" label="Start Date" />
+                <Input id="input-end-date" name="endDate" type="date" label="End Date" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
-                <textarea required name="description" rows="4" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="Describe your responsibilities and achievements..."></textarea>
+                <textarea id="input-description" required name="description" rows="4" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="Describe your responsibilities and achievements..."></textarea>
             </div>
             <div className="flex justify-end">
-              <Button type="submit" className="flex items-center gap-2">
+              <Button id="btn-add-experience" type="submit" className="flex items-center gap-2">
                 <Plus size={16} /> Add Experience
               </Button>
             </div>
@@ -209,7 +209,7 @@ export const ResumeBuilder = () => {
                 
                 {/* AI Enhancement Button */}
                 <div className="mt-4 pt-4 border-t border-border">
-                  <Button variant="outline" size="sm" onClick={() => handleEnhanceWithAI(exp)} className="flex items-center gap-2 text-accent border-accent hover:bg-accent hover:text-white">
+                  <Button id={`btn-enhance-${exp.id}`} variant="outline" size="sm" onClick={() => handleEnhanceWithAI(exp)} className="flex items-center gap-2 text-accent border-accent hover:bg-accent hover:text-white">
                     <Wand2 size={14} /> Enhance with AI
                   </Button>
                 </div>
@@ -243,9 +243,9 @@ export const ResumeBuilder = () => {
             Live Preview
             <span className="text-xs font-normal text-text-secondary px-2 py-1 bg-background border border-border rounded-md">ATS Optimized</span>
           </h3>
-          <div className="bg-white border border-border rounded-lg shadow-sm p-8 min-h-[800px] font-serif text-black">
+          <div className="bg-gradient-to-b from-white to-background-secondary border border-border rounded-lg shadow-sm p-8 min-h-[800px] font-serif text-black relative">
             <div className="text-center mb-8 border-b border-gray-300 pb-6">
-              <h1 className="text-2xl font-bold mb-2">{profile?.name}</h1>
+              <div className="text-2xl font-bold mb-2">{profile?.name}</div>
               <p className="text-sm text-gray-600">{profile?.email} | {profile?.phone || 'Add Phone'} | {profile?.location || 'Add Location'}</p>
             </div>
             
@@ -272,10 +272,10 @@ export const ResumeBuilder = () => {
             )}
             
             <div className="mt-12 pt-6 border-t border-gray-300 flex flex-col gap-3">
-              <Button onClick={handleVectorize} className="flex items-center gap-2 w-full justify-center">
+              <Button id="btn-vectorize-profile" onClick={handleVectorize} className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-accent to-primary">
                 <Wand2 size={18} /> Finalize & Publish Profile
               </Button>
-              <Button variant="outline" onClick={() => window.open('http://localhost:3000/api/candidate/resume/pdf?token=' + localStorage.getItem('token'), '_blank')} className="flex items-center gap-2 w-full justify-center text-text-secondary">
+              <Button id="btn-download-pdf" variant="outline" onClick={() => window.open('http://localhost:3000/api/candidate/resume/pdf?token=' + localStorage.getItem('token'), '_blank')} className="flex items-center gap-2 w-full justify-center text-text-secondary">
                 <Check size={18} /> Download PDF Resume
               </Button>
             </div>
