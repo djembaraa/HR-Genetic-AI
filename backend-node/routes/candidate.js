@@ -3,7 +3,6 @@ const { Queue } = require('bullmq');
 const Redis = require('ioredis');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
-const FormData = require('form-data');
 const { z } = require('zod');
 const multer = require('multer');
 const fs = require('fs');

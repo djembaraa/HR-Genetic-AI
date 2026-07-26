@@ -98,6 +98,8 @@ router.post('/analyze-cv', authenticateToken, requireRole('CANDIDATE'), upload.s
     }
 
     if (!response.ok) {
+      const errText = await response.text();
+      console.error(`AI service returned ${response.status}: ${errText}`);
       throw new Error(`AI service returned ${response.status}`);
     }
 
