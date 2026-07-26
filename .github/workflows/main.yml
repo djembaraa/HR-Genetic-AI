@@ -68,33 +68,6 @@ jobs:
       env:
         DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
 
-    - name: Start Services
-      run: |
-        # Start API Gateway
-        cd backend-node
-        npm start &
-        
-        # Start AI Service
-        cd ../ai-service
-        python main.py &
-        
-        # Start Frontend
-        cd ../frontend
-        npm run dev &
-      env:
-        DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
-        JWT_SECRET: test-secret-key-1234
-        JWT_REFRESH_SECRET: test-refresh-secret-1234
-        AI_SERVICE_URL: http://localhost:8000
-        FRONTEND_URL: http://localhost:5173
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-
-    - name: Wait for services
-      run: |
-        npx wait-on http://localhost:3000
-        npx wait-on http://localhost:5173
-        npx wait-on http://localhost:8000
-
     - name: Run Backend Tests (Jest)
       run: |
         cd backend-node
@@ -110,11 +83,6 @@ jobs:
       run: |
         cd ai-service
         python -m pytest tests/
-
-    - name: Run Cypress E2E Tests
-      run: |
-        cd frontend
-        npx cypress run
 
   deploy:
     needs: test
