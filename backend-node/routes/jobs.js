@@ -1,19 +1,34 @@
 const express = require('express');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const Redis = require('ioredis');
 
 const router = express.Router();
+const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
-// Get all jobs (Candidates can see OPEN jobs, HR sees all jobs for their company)
 router.get('/', async (req, res) => {
   try {
+    try {
+      const cachedJobs = await redis.get('jobs:all:open');
+      if (cachedJobs) {
+        return res.json(JSON.parse(cachedJobs));
+      }
+    } catch (redisError) {
+      console.warn('Redis Get Error (Fallback to DB):', redisError.message);
+    }
+
     // If not authenticated or candidate, only show open jobs across companies
-    // For a real SaaS, a candidate might filter by company.
-    // We'll just return all OPEN jobs for now.
     const jobs = await prisma.job.findMany({
       where: { status: 'OPEN' },
       include: { company: true }
     });
+
+    try {
+      await redis.set('jobs:all:open', JSON.stringify(jobs), 'EX', 300); // 5 min TTL
+    } catch (redisError) {
+      console.warn('Redis Set Error:', redisError.message);
+    }
+    
     res.json(jobs);
   } catch (error) {
     console.error(error);
@@ -54,6 +69,14 @@ router.post('/', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITE
         status: status || 'OPEN'
       }
     });
+    
+    // Invalidate public job cache safely
+    try {
+      await redis.del('jobs:all:open');
+    } catch (redisError) {
+      console.warn('Redis Del Error:', redisError.message);
+    }
+    
     res.status(201).json(job);
   } catch (error) {
     console.error(error);
@@ -76,6 +99,14 @@ router.put('/:id', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUI
       where: { id: parseInt(id) },
       data: { title, department, description, location, type, status }
     });
+    
+    // Invalidate public job cache safely
+    try {
+      await redis.del('jobs:all:open');
+    } catch (redisError) {
+      console.warn('Redis Del Error:', redisError.message);
+    }
+    
     res.json(job);
   } catch (error) {
     console.error(error);

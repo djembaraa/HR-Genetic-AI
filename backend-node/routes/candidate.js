@@ -26,6 +26,12 @@ router.post('/vectorize', async (req, res) => {
     await aiQueue.add('vectorize-profile', {
       candidateId: candidate.id,
       profileData: candidate
+    }, {
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 2000 // Initial delay 2s, then 4s, 8s
+      }
     });
 
     res.status(202).json({ message: 'Profile queued for AI vectorization' });

@@ -12,8 +12,34 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage
 from langchain_core.documents import Document
+from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
+import logging
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        frame, depth = logging.currentframe(), 2
+        while frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 load_dotenv()
+
+# Retry wrappers for Circuit Breaker / Resilience
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)
+def invoke_llm_with_retry(llm, prompt):
+    return llm.invoke(prompt)
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10), reraise=True)
+def invoke_agent_with_retry(agent, payload, config):
+    return agent.invoke(payload, config=config)
 
 # Global memory for the agent (in-memory, resets on server restart)
 memory = MemorySaver()
@@ -66,8 +92,9 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
         vectorstore.add_documents(documents=splits)
+        logger.info(f"CV for candidate {candidate_id} embedded successfully.")
     except Exception as e:
-        print(f"Error processing CV: {e}")
+        logger.error(f"Error processing CV: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
     finally:
         if os.path.exists(file_path):
@@ -93,9 +120,10 @@ def vectorize_profile(candidate_id: str = Form(...), profile_text: str = Form(..
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
         vectorstore.add_documents(documents=splits)
         
+        logger.info(f"Profile for candidate {candidate_id} vectorized successfully.")
         return {"status": "success", "message": "Profile vectorized successfully", "candidate_id": candidate_id}
     except Exception as e:
-        print(f"Error vectorizing profile: {e}")
+        logger.error(f"Error vectorizing profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -115,10 +143,11 @@ def enhance_resume(text: str = Form(...)):
             "Keep it concise and punchy.\n\n"
             f"Original text:\n{text}"
         )
-        response = llm.invoke(prompt)
+        response = invoke_llm_with_retry(llm, prompt)
+        logger.info("Resume text enhanced successfully.")
         return {"enhanced_text": response.content}
     except Exception as e:
-        print(f"Error enhancing resume: {e}")
+        logger.error(f"Error enhancing resume: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
@@ -153,13 +182,20 @@ def chat_with_agent(query: str = Form(...), thread_id: str = Form("default")):
         agent = create_react_agent(llm, tools, state_modifier=system_prompt, checkpointer=memory)
         
         config = {"configurable": {"thread_id": thread_id}}
-        response = agent.invoke({"messages": [HumanMessage(content=query)]}, config=config)
+        response = invoke_agent_with_retry(agent, {"messages": [HumanMessage(content=query)]}, config)
         
+        logger.info(f"Chat agent processed query in thread {thread_id}.")
         return {"reply": response["messages"][-1].content}
     except Exception as e:
-        print(f"Agent Error: {e}")
+        logger.error(f"Agent Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
+    
+    # Configure loguru to intercept uvicorn logs
+    logging.getLogger("uvicorn.access").handlers = [InterceptHandler()]
+    logging.getLogger("uvicorn.error").handlers = [InterceptHandler()]
+    logging.getLogger("uvicorn").handlers = [InterceptHandler()]
+    
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

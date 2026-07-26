@@ -2,6 +2,15 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
+const rateLimit = require('express-rate-limit');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -20,9 +29,10 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'super-secret-jwt-refresh-key';
 
 // SIGN UP ROUTE (For Candidates only)
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
   try {
     const { email, password, name, phone } = signupSchema.parse(req.body);
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -63,7 +73,7 @@ router.post('/signup', async (req, res) => {
 });
 
 // LOGIN ROUTE
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
     const user = await prisma.user.findUnique({ where: { email } });
@@ -80,7 +90,7 @@ router.post('/login', async (req, res) => {
     
     const refreshToken = jwt.sign(
       { userId: user.id },
-      JWT_SECRET,
+      JWT_REFRESH_SECRET,
       { expiresIn: '7d' } // Long-lived refresh token
     );
     
@@ -95,8 +105,14 @@ router.post('/login', async (req, res) => {
         expiresAt: expiresAt
       }
     });
+    // Store refresh token in HTTP-only Cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
     
-    res.json({ token, refreshToken, user: { id: user.id, email: user.email, role: user.role, companyId: user.companyId } });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, companyId: user.companyId } });
   } catch (error) {
     console.error('Login Error:', error);
     if (error instanceof z.ZodError) {
@@ -107,11 +123,11 @@ router.post('/login', async (req, res) => {
 });
 
 // REFRESH TOKEN ROUTE
-router.post('/refresh', async (req, res) => {
-  const { refreshToken } = req.body;
+router.post('/refresh', authLimiter, async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) return res.status(401).json({ error: 'No refresh token provided' });
 
-  jwt.verify(refreshToken, JWT_SECRET, async (err, decoded) => {
+  jwt.verify(refreshToken, JWT_REFRESH_SECRET, async (err, decoded) => {
     if (err) return res.status(403).json({ error: 'Invalid or expired refresh token' });
     
     try {
@@ -137,8 +153,8 @@ router.post('/refresh', async (req, res) => {
 });
 
 // LOGOUT ROUTE
-router.post('/logout', authenticateToken, async (req, res) => {
-  const { refreshToken } = req.body;
+router.post('/logout', authLimiter, authenticateToken, async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) return res.status(400).json({ error: 'No refresh token provided' });
 
   try {
@@ -147,6 +163,7 @@ router.post('/logout', authenticateToken, async (req, res) => {
       where: { token: refreshToken },
       data: { revoked: true }
     });
+    res.clearCookie('refreshToken');
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout Error:', error);
