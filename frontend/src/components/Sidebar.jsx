@@ -9,6 +9,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 

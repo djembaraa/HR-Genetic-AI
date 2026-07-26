@@ -64,6 +64,7 @@ jobs:
       run: |
         cd backend-node
         npx prisma migrate deploy
+        node prisma/seed.js
       env:
         DATABASE_URL: postgresql://admin:password123@localhost:5432/hr_genetic_ai
 

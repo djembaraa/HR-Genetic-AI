@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key';
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Unauthorized: Missing token' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {

@@ -20,19 +20,29 @@ router.post('/vectorize', async (req, res) => {
   try {
     const candidate = await prisma.candidate.findUnique({
       where: { userId: req.user.userId },
-      include: { experiences: true, educations: true, skills: true }
-    });
-
-    await aiQueue.add('vectorize-profile', {
-      candidateId: candidate.id,
-      profileData: candidate
-    }, {
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000 // Initial delay 2s, then 4s, 8s
+      include: { 
+        experiences: true, 
+        educations: true, 
+        skills: true,
+        applications: { include: { job: true } }
       }
     });
+
+    const companyIds = ['default', ...new Set(candidate.applications.map(app => app.job.companyId))];
+
+    for (const companyId of companyIds) {
+      await aiQueue.add('vectorize-profile', {
+        candidateId: candidate.id,
+        companyId: companyId,
+        profileData: candidate
+      }, {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000
+        }
+      });
+    }
 
     res.status(202).json({ message: 'Profile queued for AI vectorization' });
   } catch (error) {
@@ -50,7 +60,9 @@ router.get('/profile', async (req, res) => {
         experiences: { orderBy: { sortOrder: 'asc' } },
         educations: { orderBy: { sortOrder: 'asc' } },
         skills: true,
-        appliedJob: true
+        applications: {
+          include: { job: { include: { company: true } } }
+        }
       }
     });
     if (!candidate) return res.status(404).json({ error: 'Candidate profile not found' });
@@ -90,17 +102,54 @@ router.post('/apply/:jobId', async (req, res) => {
       return res.status(404).json({ error: 'Job not found or is closed' });
     }
 
-    // Update the candidate's appliedJobId
-    const candidate = await prisma.candidate.update({
+    const candidate = await prisma.candidate.findUnique({
       where: { userId: req.user.userId },
-      data: { 
-        appliedJobId: parseInt(jobId),
-        companyId: job.companyId // Set company ID context to the job's company
-      },
-      include: { appliedJob: true }
+      include: { experiences: true, educations: true, skills: true }
+    });
+    
+    // Check if already applied
+    const existingApp = await prisma.jobApplication.findUnique({
+      where: {
+        candidateId_jobId: {
+          candidateId: candidate.id,
+          jobId: parseInt(jobId)
+        }
+      }
+    });
+    if (existingApp) {
+      return res.status(400).json({ error: 'You have already applied to this job' });
+    }
+
+    // Create the application
+    await prisma.jobApplication.create({
+      data: {
+        candidateId: candidate.id,
+        jobId: parseInt(jobId)
+      }
     });
 
-    res.json({ message: 'Successfully applied to job', candidate });
+    // Also trigger vectorize-profile for this specific company so they are added to the company's ChromaDB context
+    await aiQueue.add('vectorize-profile', {
+      candidateId: candidate.id,
+      companyId: job.companyId,
+      profileData: candidate
+    }, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2000 }
+    });
+
+    // Return the updated candidate profile structure for the frontend
+    const updatedCandidate = await prisma.candidate.findUnique({
+      where: { userId: req.user.userId },
+      include: {
+        experiences: { orderBy: { sortOrder: 'asc' } },
+        educations: { orderBy: { sortOrder: 'asc' } },
+        skills: true,
+        applications: { include: { job: { include: { company: true } } } }
+      }
+    });
+
+    res.json({ message: 'Successfully applied to job', candidate: updatedCandidate });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to apply for job' });
@@ -133,7 +182,15 @@ router.post('/experience', async (req, res) => {
 router.put('/experience/:id', async (req, res) => {
   const { description } = req.body;
   try {
-    // Should verify ownership, simplified for MVP
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.experience.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    
+    if (!existing) {
+      return res.status(404).json({ error: 'Experience not found or unauthorized' });
+    }
+
     const experience = await prisma.experience.update({
       where: { id: parseInt(req.params.id) },
       data: { description }
@@ -147,7 +204,15 @@ router.put('/experience/:id', async (req, res) => {
 
 router.delete('/experience/:id', async (req, res) => {
   try {
-    // Should verify ownership, simplified for MVP
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.experience.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    
+    if (!existing) {
+      return res.status(404).json({ error: 'Experience not found or unauthorized' });
+    }
+
     await prisma.experience.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ message: 'Deleted' });
   } catch (error) {
@@ -180,6 +245,15 @@ router.post('/education', async (req, res) => {
 
 router.delete('/education/:id', async (req, res) => {
   try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.education.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    
+    if (!existing) {
+      return res.status(404).json({ error: 'Education not found or unauthorized' });
+    }
+
     await prisma.education.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ message: 'Deleted' });
   } catch (error) {
@@ -209,6 +283,15 @@ router.post('/skill', async (req, res) => {
 
 router.delete('/skill/:id', async (req, res) => {
   try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.skill.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    
+    if (!existing) {
+      return res.status(404).json({ error: 'Skill not found or unauthorized' });
+    }
+
     await prisma.skill.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ message: 'Deleted' });
   } catch (error) {

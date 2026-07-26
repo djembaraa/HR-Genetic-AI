@@ -206,6 +206,29 @@ export const ResumeBuilder = () => {
     } catch(err) {}
   };
 
+  const handleDownloadPDF = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('http://localhost:3000/api/candidate/resume/pdf', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to download PDF');
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${profile?.name?.replace(/\s+/g, '_') || 'Candidate'}_Resume.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to generate PDF');
+    }
+  };
+
   if (loading) return <div className="p-8 text-text-secondary">Loading your profile...</div>;
 
   return (
@@ -454,7 +477,7 @@ export const ResumeBuilder = () => {
               <Button id="btn-vectorize-profile" onClick={handleVectorize} className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-accent to-primary">
                 <Wand2 size={18} /> Finalize & Publish Profile
               </Button>
-              <Button id="btn-download-pdf" variant="outline" onClick={() => window.open('http://localhost:3000/api/candidate/resume/pdf?token=' + localStorage.getItem('token'), '_blank')} className="flex items-center gap-2 w-full justify-center text-text-secondary">
+              <Button id="btn-download-pdf" variant="outline" onClick={handleDownloadPDF} className="flex items-center gap-2 w-full justify-center text-text-secondary">
                 <Check size={18} /> Download PDF Resume
               </Button>
             </div>

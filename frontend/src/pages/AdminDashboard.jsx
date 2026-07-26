@@ -4,6 +4,7 @@ import { ChatBox } from '../components/ChatBox';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState({ candidates: 0, jobs: 0 });
+  const [recentCandidates, setRecentCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,8 +20,18 @@ export const AdminDashboard = () => {
         if(res.ok && data.stats) {
           setStats(data.stats);
         }
+        
+        // Also fetch recent candidates
+        const candidatesRes = await fetch('http://localhost:3000/api/hr/candidates', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (candidatesRes.ok) {
+          const cData = await candidatesRes.json();
+          // limit to top 5
+          setRecentCandidates(cData.slice(0, 5));
+        }
       } catch (err) {
-        console.error("Failed to load stats", err);
+        console.error("Failed to load dashboard data", err);
       } finally {
         setLoading(false);
       }
@@ -64,10 +75,25 @@ export const AdminDashboard = () => {
             <tbody>
               {loading ? (
                 <tr><td colSpan="4" className="py-4 text-center">Loading...</td></tr>
-              ) : stats.candidates === 0 ? (
+              ) : recentCandidates.length === 0 ? (
                 <tr><td colSpan="4" className="py-4 text-center text-text-light">No candidates found in database</td></tr>
               ) : (
-                 <tr><td colSpan="4" className="py-4 text-center text-text-light">Data will be mapped here</td></tr>
+                recentCandidates.map(c => (
+                  <tr key={c.id} className="border-b border-border/50 hover:bg-background-secondary transition-colors">
+                    <td className="py-4 text-primary font-medium">{c.name}</td>
+                    <td className="py-4 text-text-secondary">{c.email}</td>
+                    <td className="py-4 text-text-secondary">{new Date(c.createdAt).toLocaleDateString()}</td>
+                    <td className="py-4">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        c.vectorizationStatus === 'COMPLETED' ? 'bg-success/10 text-success' : 
+                        c.vectorizationStatus === 'FAILED' ? 'bg-error/10 text-error' : 
+                        'bg-accent/10 text-accent'
+                      }`}>
+                        {c.vectorizationStatus}
+                      </span>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

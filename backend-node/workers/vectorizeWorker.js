@@ -4,6 +4,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const promClient = require('prom-client');
 const Sentry = require('@sentry/node');
+const prisma = require('../lib/prisma');
 
 // Define Prometheus metrics for Worker
 const workerJobsProcessed = new promClient.Counter({
@@ -30,7 +31,8 @@ const worker = new Worker('ai-jobs', async (job) => {
       formData.append('company_id', companyId.toString());
       formData.append('file', fs.createReadStream(filePath));
       
-      const response = await fetch('http://localhost:8000/api/process-cv', {
+      const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+      const response = await fetch(`${AI_SERVICE_URL}/api/process-cv`, {
         method: 'POST',
         body: formData
       });
@@ -48,9 +50,21 @@ const worker = new Worker('ai-jobs', async (job) => {
         console.log(`[BullMQ] Cleaned up temporary file: ${filePath}`);
       }
       
+      // Update DB Status
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { vectorizationStatus: 'COMPLETED' }
+      });
+      
       return { status: 'success', candidateId };
     } catch (error) {
       console.error(`[BullMQ] Failed to vectorize CV for candidate ${candidateId}`, error);
+      // Update DB Status on failure
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { vectorizationStatus: 'FAILED' }
+      }).catch(e => console.error(e));
+      
       throw error;
     }
   } else if (job.name === 'vectorize-profile') {
@@ -89,7 +103,8 @@ const worker = new Worker('ai-jobs', async (job) => {
     formData.append('profile_text', profileText);
     
     try {
-      const response = await fetch('http://localhost:8000/api/vectorize-profile', {
+      const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+      const response = await fetch(`${AI_SERVICE_URL}/api/vectorize-profile`, {
         method: 'POST',
         body: formData
       });
@@ -100,9 +115,23 @@ const worker = new Worker('ai-jobs', async (job) => {
       
       const result = await response.json();
       console.log(`[BullMQ] Completed vectorizing profile for candidate ${candidateId}: ${result.message}`);
+      
+      // Update DB Status
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { vectorizationStatus: 'COMPLETED' }
+      });
+
       return { status: 'success', candidateId };
     } catch (error) {
       console.error(`[BullMQ] Failed to vectorize profile for candidate ${candidateId}`, error);
+      
+      // Update DB Status on failure
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { vectorizationStatus: 'FAILED' }
+      }).catch(e => console.error(e));
+      
       throw error;
     }
   }

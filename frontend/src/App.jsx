@@ -163,7 +163,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
 
         {/* Protected Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute />}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN', 'HR_MANAGER', 'RECRUITER']} />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="candidates" element={<Candidates />} />
@@ -173,7 +173,7 @@ function App() {
         </Route>
 
         {/* Protected Candidate Routes */}
-        <Route path="/candidate" element={<ProtectedRoute />}>
+        <Route path="/candidate" element={<ProtectedRoute allowedRoles={['CANDIDATE']} />}>
           <Route element={<CandidateLayout />}>
             <Route index element={<CandidateDashboard />} />
             <Route path="resume-builder" element={<ResumeBuilder />} />

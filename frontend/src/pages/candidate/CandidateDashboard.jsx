@@ -8,6 +8,7 @@ export const CandidateDashboard = () => {
   const [candidateProfile, setCandidateProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applyingJobId, setApplyingJobId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -81,6 +82,8 @@ export const CandidateDashboard = () => {
           <input 
             type="text" 
             placeholder="Search jobs..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full sm:w-64 pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
           />
         </div>
@@ -94,14 +97,24 @@ export const CandidateDashboard = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-text-secondary">
-              <Briefcase size={48} className="mx-auto mb-4 text-border" />
-              <p>No open jobs available at the moment.</p>
-            </div>
-          ) : (
-            jobs.map(job => {
-              const isApplied = candidateProfile?.appliedJobId === job.id;
+          {(() => {
+            const filteredJobs = jobs.filter(job => 
+              job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+              (job.company?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+              job.department.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredJobs.length === 0) {
+              return (
+                <div className="col-span-full py-12 text-center text-text-secondary">
+                  <Briefcase size={48} className="mx-auto mb-4 text-border" />
+                  <p>No open jobs match your search.</p>
+                </div>
+              );
+            }
+
+            return filteredJobs.map(job => {
+              const isApplied = candidateProfile?.applications?.some(app => app.jobId === job.id);
               
               return (
                 <Card key={job.id} hoverable={!isApplied} className={`flex flex-col h-full ${isApplied ? 'border-accent/50 shadow-sm ring-1 ring-accent/20' : ''}`}>
@@ -143,8 +156,8 @@ export const CandidateDashboard = () => {
                   </div>
                 </Card>
               );
-            })
-          )}
+            });
+          })()}
         </div>
       )}
     </div>

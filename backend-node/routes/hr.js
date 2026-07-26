@@ -1,4 +1,5 @@
 const express = require('express');
+const PDFDocument = require('pdfkit');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
@@ -19,14 +20,20 @@ router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 
     
     const jobIds = jobs.map(j => j.id);
 
-    // Fetch candidates who applied to these jobs
-    // In our simplified MVP, we assume a candidate applies to a job by setting `appliedJobId`.
+    // Fetch candidates who applied to these jobs via JobApplication
     const candidates = await prisma.candidate.findMany({
       where: {
-        appliedJobId: { in: jobIds }
+        applications: {
+          some: {
+            jobId: { in: jobIds }
+          }
+        }
       },
       include: {
-        appliedJob: true
+        applications: {
+          where: { jobId: { in: jobIds } },
+          include: { job: true }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -61,6 +68,84 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
         console.error('Chat Error:', error);
         res.status(500).json({ error: 'Internal Server Error connecting to AI Agent' });
     }
+});
+
+// GET /api/hr/resume/pdf/:candidateId
+router.get('/resume/pdf/:candidateId', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
+  try {
+    const candidateId = parseInt(req.params.candidateId);
+    const companyId = req.user.companyId;
+
+    const candidate = await prisma.candidate.findFirst({
+      where: { 
+        id: candidateId,
+        applications: {
+          some: { job: { companyId: companyId } }
+        }
+      },
+      include: {
+        experiences: { orderBy: { sortOrder: 'asc' } },
+        educations: { orderBy: { sortOrder: 'asc' } },
+        skills: true
+      }
+    });
+
+    if (!candidate) {
+      return res.status(404).json({ error: 'Candidate profile not found or not applied to your company' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${candidate.name.replace(/\\s+/g, '_')}_Resume.pdf"`);
+    const doc = new PDFDocument({ margin: 50 });
+    doc.pipe(res);
+    doc.fontSize(24).font('Helvetica-Bold').text(candidate.name || 'Candidate Resume', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(12).font('Helvetica').text(`${candidate.email || ''} | ${candidate.phone || ''} | ${candidate.location || ''}`, { align: 'center' });
+    doc.moveDown(1.5);
+    
+    if (candidate.summary) {
+      doc.fontSize(14).font('Helvetica-Bold').text('Summary');
+      doc.moveDown(0.5);
+      doc.fontSize(10).font('Helvetica').text(candidate.summary);
+      doc.moveDown(1.5);
+    }
+    
+    if (candidate.experiences && candidate.experiences.length > 0) {
+      doc.fontSize(14).font('Helvetica-Bold').text('Experience');
+      doc.moveDown(0.5);
+      candidate.experiences.forEach(exp => {
+        doc.fontSize(12).font('Helvetica-Bold').text(`${exp.title} at ${exp.company}`);
+        const start = new Date(exp.startDate).getFullYear();
+        const end = exp.endDate ? new Date(exp.endDate).getFullYear() : 'Present';
+        doc.fontSize(10).font('Helvetica-Oblique').text(`${start} - ${end}`);
+        doc.fontSize(10).font('Helvetica').text(exp.description);
+        doc.moveDown(1);
+      });
+    }
+    
+    if (candidate.educations && candidate.educations.length > 0) {
+      doc.fontSize(14).font('Helvetica-Bold').text('Education');
+      doc.moveDown(0.5);
+      candidate.educations.forEach(edu => {
+        doc.fontSize(12).font('Helvetica-Bold').text(`${edu.degree} in ${edu.field}`);
+        doc.fontSize(10).font('Helvetica-Oblique').text(edu.institution);
+        doc.moveDown(1);
+      });
+    }
+    
+    if (candidate.skills && candidate.skills.length > 0) {
+      doc.fontSize(14).font('Helvetica-Bold').text('Skills');
+      doc.moveDown(0.5);
+      const skillsText = candidate.skills.map(s => `${s.name} (${s.proficiency})`).join(', ');
+      doc.fontSize(10).font('Helvetica').text(skillsText);
+    }
+    
+    doc.end();
+
+  } catch (error) {
+    console.error('PDF Generation Error:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
+  }
 });
 
 module.exports = router;
