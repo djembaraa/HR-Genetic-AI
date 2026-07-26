@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
+import { fetchApi } from '../../lib/api';
+import toast from 'react-hot-toast';
+
+
 
 export const CandidateDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -22,14 +26,14 @@ export const CandidateDashboard = () => {
       const token = localStorage.getItem('token');
       
       // Fetch open jobs
-      const jobsRes = await fetch('http://localhost:3000/api/jobs');
+      const jobsRes = await fetchApi('/api/jobs');
       if (jobsRes.ok) {
         const jobsData = await jobsRes.json();
         setJobs(jobsData);
       }
 
       // Fetch candidate profile to know applied job
-      const profileRes = await fetch('http://localhost:3000/api/candidate/profile', {
+      const profileRes = await fetchApi('/api/candidate/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (profileRes.ok) {
@@ -48,7 +52,7 @@ export const CandidateDashboard = () => {
     setApplyingJobId(jobId);
     
     try {
-      const res = await fetch(`http://localhost:3000/api/candidate/apply/${jobId}`, {
+      const res = await fetchApi(`/api/candidate/apply/${jobId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -58,14 +62,14 @@ export const CandidateDashboard = () => {
       if (res.ok) {
         const data = await res.json();
         setCandidateProfile(data.candidate); // update profile to reflect new appliedJobId
-        alert('Successfully applied to the job!');
+        toast.success('Successfully applied to the job!');
       } else {
         const err = await res.json();
-        alert(err.error || 'Failed to apply to job');
+        toast.error(err.error || 'Failed to apply to job');
       }
     } catch (error) {
       console.error('Error applying to job:', error);
-      alert('An error occurred while applying.');
+      toast.error('An error occurred while applying.');
     } finally {
       setApplyingJobId(null);
     }
@@ -75,21 +79,21 @@ export const CandidateDashboard = () => {
     setIsAiMatching(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/candidate/recommendations', {
+      const res = await fetchApi('/api/candidate/recommendations', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
         setRecommendedJobIds(data.recommended_job_ids || []);
         if (data.recommended_job_ids?.length === 0) {
-          alert('No specific AI matches found. Try adding more skills to your profile!');
+          toast.error('No specific AI matches found. Try adding more skills to your profile!');
         }
       } else {
-        alert('Failed to get recommendations.');
+        toast.error('Failed to get recommendations.');
       }
     } catch (error) {
       console.error(error);
-      alert('Error fetching recommendations.');
+      toast.error('Error fetching recommendations.');
     } finally {
       setIsAiMatching(false);
     }

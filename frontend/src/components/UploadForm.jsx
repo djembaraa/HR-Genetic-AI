@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { Button } from './Button';
 import { Card } from './Card';
 import { Upload } from 'lucide-react';
+import { fetchApi } from '../lib/api';
+import toast from 'react-hot-toast';
+
+
 
 export const UploadForm = () => {
   const [file, setFile] = useState(null);
@@ -12,7 +16,7 @@ export const UploadForm = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return alert('Please select a CV file first!');
+    if (!file) return toast.error('Please select a CV file first!');
     
     setIsLoading(true);
     setUploadStatus('Uploading & Processing with AI...');
@@ -25,7 +29,7 @@ export const UploadForm = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/candidates/upload', {
+      const res = await fetchApi('/api/candidates/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

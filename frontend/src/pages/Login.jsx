@@ -6,6 +6,8 @@ import { Input } from '../components/Input';
 import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { fetchApi } from '../lib/api';
+
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +22,7 @@ export const Login = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:3000/api/auth/login', {
+      const res = await fetchApi('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

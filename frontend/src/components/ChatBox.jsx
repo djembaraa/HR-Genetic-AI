@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './Button';
 import { Send, Bot, User } from 'lucide-react';
+import { fetchApi } from '../lib/api';
+
 
 export const ChatBox = () => {
   const [chatInput, setChatInput] = useState('');
@@ -29,7 +31,7 @@ export const ChatBox = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/hr/chat', {
+      const res = await fetchApi('/api/hr/chat', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

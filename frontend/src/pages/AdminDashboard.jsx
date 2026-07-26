@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../components/Card';
 import { ChatBox } from '../components/ChatBox';
+import { fetchApi } from '../lib/api';
+
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState({ candidates: 0, jobs: 0 });
@@ -11,7 +13,7 @@ export const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3000/api/admin/dashboard', {
+        const res = await fetchApi('/api/admin/dashboard', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -22,7 +24,7 @@ export const AdminDashboard = () => {
         }
         
         // Also fetch recent candidates
-        const candidatesRes = await fetch('http://localhost:3000/api/hr/candidates', {
+        const candidatesRes = await fetchApi('/api/hr/candidates', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (candidatesRes.ok) {

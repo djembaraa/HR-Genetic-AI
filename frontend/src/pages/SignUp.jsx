@@ -6,6 +6,10 @@ import { Input } from '../components/Input';
 import { Mail, Lock, User, UserPlus, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { fetchApi } from '../lib/api';
+import toast from 'react-hot-toast';
+
+
 
 export const SignUp = () => {
   const [name, setName] = useState('');
@@ -21,7 +25,7 @@ export const SignUp = () => {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:3000/api/auth/signup', {
+      const res = await fetchApi('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, role: 'CANDIDATE' })
@@ -30,7 +34,7 @@ export const SignUp = () => {
       const data = await res.json();
       
       if (res.ok) {
-        alert('Account created! Please log in.');
+        toast.success('Account created! Please log in.');
         navigate('/login');
       } else {
         setError(data.error || 'Signup failed');

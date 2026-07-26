@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Shield, Key, Save } from 'lucide-react';
+import { fetchApi } from '../../lib/api';
+
 
 export const Settings = () => {
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export const Settings = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/auth/me', {
+      const res = await fetchApi('/api/auth/me', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

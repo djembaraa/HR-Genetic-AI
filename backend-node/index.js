@@ -83,7 +83,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Require auth middleware before routes
+const { authenticateToken, requireRole } = require('./middleware/auth');
+
 app.get('/metrics', async (req, res) => {
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey !== (process.env.PROMETHEUS_API_KEY || 'default-metrics-key-please-change')) {
+    return res.status(401).send('Unauthorized');
+  }
   res.set('Content-Type', promClient.register.contentType);
   res.end(await promClient.register.metrics());
 });
@@ -100,35 +107,10 @@ app.use('/api/candidate/resume/pdf', require('./routes/resume-pdf'));
 app.use('/api/hr', require('./routes/hr'));
 app.use('/api/ai', aiRoutes);
 
-const { authenticateToken, requireRole } = require('./middleware/auth');
-
-// JWT Middleware is now imported from ./middleware/auth.js
-
-// Setup Multer for handling file uploads (PDF)
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
-});
-const upload = multer({ 
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') {
-            cb(null, true);
-        } else {
-            cb(new Error('Invalid file type. Only PDF is allowed.'), false);
-        }
-    }
-});
-
-
-// FASTAPI SERVICE URL
+// FastAPI Service URL (imported globally if needed, though used in specific routes)
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+
+
 
 app.get('/', (req, res) => {
     logger.info('Gateway health check requested');
@@ -137,14 +119,26 @@ app.get('/', (req, res) => {
 
 // Example of a Protected Route (Admin Only)
 app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
-  // Dashboard mock stats
-  res.json({
-    message: `Welcome Admin ${req.user.email}`,
-    stats: {
-      candidates: await prisma.candidate.count(),
-      jobs: await prisma.job.count()
-    }
-  });
+  try {
+    const companyId = req.user.companyId;
+    if (!companyId) return res.status(403).json({ error: 'User is not associated with a company' });
+    
+    // Scoped dashboard stats
+    res.json({
+      message: `Welcome Admin ${req.user.email}`,
+      stats: {
+        candidates: await prisma.candidate.count({
+          where: { applications: { some: { job: { companyId } } } }
+        }),
+        jobs: await prisma.job.count({
+          where: { companyId }
+        })
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({ error: 'Failed to load dashboard' });
+  }
 });
 
 
@@ -155,10 +149,45 @@ if (Sentry.Handlers && Sentry.Handlers.errorHandler) {
   app.use(Sentry.Handlers.errorHandler());
 }
 
+// Global Express Error Handler
+app.use((err, req, res, next) => {
+  logger.error('Unhandled Exception:', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 // Start BullMQ Worker
 require('./workers/vectorizeWorker');
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Express Gateway running on http://localhost:${PORT}`);
 });
+
+// Graceful Shutdown
+const shutdown = async (signal) => {
+  console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+  
+  server.close(async () => {
+    console.log('HTTP server closed.');
+    try {
+      await prisma.$disconnect();
+      console.log('Prisma disconnected.');
+      process.exit(0);
+    } catch (err) {
+      console.error('Error during shutdown:', err);
+      process.exit(1);
+    }
+  });
+  
+  // Force shutdown after 10s
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

@@ -1,5 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security.api_key import APIKeyHeader
 import os
 import shutil
 from dotenv import load_dotenv
@@ -58,10 +59,21 @@ memory = MemorySaver()
 
 app = FastAPI(title="AI ATS Service")
 
+# Authentication setup
+API_KEY_NAME = "x-api-key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+def get_api_key(api_key: str = Security(api_key_header)):
+    expected_key = os.getenv("AI_SERVICE_API_KEY", "default-ai-secret-key")
+    if api_key != expected_key:
+        raise HTTPException(status_code=403, detail="Could not validate API Key")
+    return api_key
+
 # Allow CORS for local dev
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[FRONTEND_URL, "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -75,7 +87,12 @@ def read_root():
     return {"message": "AI ATS Service is running!"}
 
 @app.post("/api/process-cv")
-def process_cv(candidate_id: str = Form(...), company_id: str = Form(...), file: UploadFile = File(...)):
+def process_cv(
+    candidate_id: str = Form(...), 
+    company_id: str = Form(...), 
+    file: UploadFile = File(...),
+    api_key: str = Depends(get_api_key)
+):
     """
     Receives a CV PDF from the Node backend, chunks it, and saves embeddings to ChromaDB.
     """
@@ -104,6 +121,12 @@ def process_cv(candidate_id: str = Form(...), company_id: str = Form(...), file:
         # 3. Create Embeddings and Store in ChromaDB
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        
+        # Delete existing docs for this candidate to prevent duplicates
+        existing = vectorstore.get(where={"candidate_id": candidate_id})
+        if existing and existing.get("ids"):
+            vectorstore.delete(ids=existing["ids"])
+            
         vectorstore.add_documents(documents=splits)
         logger.info(f"CV for candidate {candidate_id} embedded successfully.")
     except Exception as e:
@@ -116,7 +139,12 @@ def process_cv(candidate_id: str = Form(...), company_id: str = Form(...), file:
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
 @app.post("/api/vectorize-profile")
-def vectorize_profile(candidate_id: str = Form(...), company_id: str = Form(...), profile_text: str = Form(...)):
+def vectorize_profile(
+    candidate_id: str = Form(...), 
+    company_id: str = Form(...), 
+    profile_text: str = Form(...),
+    api_key: str = Depends(get_api_key)
+):
     """
     Receives structured profile text from Node, chunks it, and saves to ChromaDB.
     """
@@ -131,6 +159,12 @@ def vectorize_profile(candidate_id: str = Form(...), company_id: str = Form(...)
         # Store in ChromaDB
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        
+        # Delete existing docs for this candidate
+        existing = vectorstore.get(where={"candidate_id": candidate_id})
+        if existing and existing.get("ids"):
+            vectorstore.delete(ids=existing["ids"])
+            
         vectorstore.add_documents(documents=splits)
         
         logger.info(f"Profile for candidate {candidate_id} vectorized successfully.")
@@ -141,7 +175,7 @@ def vectorize_profile(candidate_id: str = Form(...), company_id: str = Form(...)
 
 
 @app.post("/api/enhance-resume")
-def enhance_resume(text: str = Form(...)):
+def enhance_resume(text: str = Form(...), api_key: str = Depends(get_api_key)):
     """
     Takes raw resume text and rewrites it into a professional, ATS-friendly format
     using active verbs and emphasizing metrics.
@@ -164,7 +198,12 @@ def enhance_resume(text: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
-def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_id: str = Form("default")):
+def chat_with_agent(
+    query: str = Form(...), 
+    company_id: str = Form(...), 
+    thread_id: str = Form("default"),
+    api_key: str = Depends(get_api_key)
+):
     """
     Chat endpoint for HR to ask questions about the candidates using RAG agent with memory.
     """
@@ -211,7 +250,11 @@ def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/recommend-jobs")
-def recommend_jobs(profile_text: str = Form(...), jobs_json: str = Form(...)):
+def recommend_jobs(
+    profile_text: str = Form(...), 
+    jobs_json: str = Form(...),
+    api_key: str = Depends(get_api_key)
+):
     """
     Evaluates candidate profile against available jobs and returns a list of recommended job IDs.
     """

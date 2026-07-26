@@ -2,8 +2,13 @@ const express = require('express');
 const PDFDocument = require('pdfkit');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
+const { z } = require('zod');
 
 const router = express.Router();
+
+const chatSchema = z.object({
+  query: z.string().min(1, 'Query is required').max(1000, 'Query is too long')
+});
 
 // GET /api/hr/candidates
 // Fetch candidates applied to jobs in the HR's company
@@ -49,8 +54,14 @@ router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 
 // Endpoint to chat with HR Agent
 router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
     try {
-        const { query } = req.body;
+        const validated = chatSchema.safeParse(req.body);
+        if (!validated.success) {
+            return res.status(400).json({ error: validated.error.errors[0].message });
+        }
+        const { query } = validated.data;
+        
         const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
         
         const formData = new FormData();
         formData.append('query', query);
@@ -59,6 +70,7 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
 
         const aiResponse = await fetch(`${AI_SERVICE_URL}/api/chat`, {
             method: 'POST',
+            headers: { 'x-api-key': AI_API_KEY },
             body: formData
         });
 

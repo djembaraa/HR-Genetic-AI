@@ -3,6 +3,10 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award, X, Check } from 'lucide-react';
+import { fetchApi } from '../../lib/api';
+import toast from 'react-hot-toast';
+
+
 
 export const ResumeBuilder = () => {
   const [profile, setProfile] = useState(null);
@@ -17,7 +21,7 @@ export const ResumeBuilder = () => {
   const fetchProfile = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/api/candidate/profile', {
+      const res = await fetchApi('/api/candidate/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -42,7 +46,7 @@ export const ResumeBuilder = () => {
     const data = Object.fromEntries(formData);
     
     try {
-      const res = await fetch('http://localhost:3000/api/candidate/experience', {
+      const res = await fetchApi('/api/candidate/experience', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -62,7 +66,7 @@ export const ResumeBuilder = () => {
   const deleteExperience = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/candidate/experience/${id}`, {
+      const res = await fetchApi(`/api/candidate/experience/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -79,7 +83,7 @@ export const ResumeBuilder = () => {
     const data = Object.fromEntries(formData);
     
     try {
-      const res = await fetch('http://localhost:3000/api/candidate/education', {
+      const res = await fetchApi('/api/candidate/education', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -99,7 +103,7 @@ export const ResumeBuilder = () => {
   const deleteEducation = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/candidate/education/${id}`, {
+      const res = await fetchApi(`/api/candidate/education/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -116,12 +120,12 @@ export const ResumeBuilder = () => {
     const data = Object.fromEntries(formData);
     
     if (profile?.skills?.some(s => s.name.toLowerCase() === data.name.trim().toLowerCase())) {
-      alert(`Skill '${data.name}' has already been added.`);
+      toast.error(`Skill '${data.name}' has already been added.`);
       return;
     }
     
     try {
-      const res = await fetch('http://localhost:3000/api/candidate/skill', {
+      const res = await fetchApi('/api/candidate/skill', {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -141,7 +145,7 @@ export const ResumeBuilder = () => {
   const deleteSkill = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/candidate/skill/${id}`, {
+      const res = await fetchApi(`/api/candidate/skill/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -159,7 +163,7 @@ export const ResumeBuilder = () => {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/api/ai/enhance', {
+      const res = await fetchApi('/api/ai/enhance', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -182,7 +186,7 @@ export const ResumeBuilder = () => {
   const acceptAiSuggestion = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/candidate/experience/${currentExpId}`, {
+      const res = await fetchApi(`/api/candidate/experience/${currentExpId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -196,25 +200,25 @@ export const ResumeBuilder = () => {
       }
     } catch (error) {
       console.error(error);
-      alert('Failed to save AI suggestion');
+      toast.error('Failed to save AI suggestion');
     }
   };
 
   const handleVectorize = async () => {
     const token = localStorage.getItem('token');
     try {
-      await fetch('http://localhost:3000/api/candidate/vectorize', {
+      await fetchApi('/api/candidate/vectorize', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      alert('Your profile has been queued for background AI processing!');
+      toast.success('Your profile has been queued for background AI processing!');
     } catch(err) {}
   };
 
   const handleDownloadPDF = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/api/candidate/resume/pdf', {
+      const res = await fetchApi('/api/candidate/resume/pdf', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to download PDF');
@@ -230,7 +234,7 @@ export const ResumeBuilder = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      alert('Failed to generate PDF');
+      toast.error('Failed to generate PDF');
     }
   };
 

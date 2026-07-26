@@ -4,8 +4,37 @@ const Redis = require('ioredis');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const FormData = require('form-data');
+const { z } = require('zod');
 
 const router = express.Router();
+
+const profileSchema = z.object({
+  name: z.string().min(2, "Name is required").optional(),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  summary: z.string().optional()
+});
+
+const experienceSchema = z.object({
+  company: z.string().min(1, "Company is required"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  startDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
+  endDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid end date").optional().nullable()
+});
+
+const educationSchema = z.object({
+  institution: z.string().min(1, "Institution is required"),
+  degree: z.string().min(1, "Degree is required"),
+  field: z.string().min(1, "Field is required"),
+  startDate: z.string().refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
+  endDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid end date").optional().nullable()
+});
+
+const skillSchema = z.object({
+  name: z.string().min(1, "Skill name is required"),
+  proficiency: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional()
+});
 
 const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   maxRetriesPerRequest: null
@@ -76,8 +105,11 @@ router.get('/profile', async (req, res) => {
 
 // Update candidate basic info
 router.put('/profile', async (req, res) => {
-  const { name, phone, location, summary } = req.body;
   try {
+    const validated = profileSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { name, phone, location, summary } = validated.data;
+    
     const candidate = await prisma.candidate.update({
       where: { userId: req.user.userId },
       data: { name, phone, location, summary }
@@ -209,8 +241,11 @@ router.post('/apply/:jobId', async (req, res) => {
 // --- Experience ---
 
 router.post('/experience', async (req, res) => {
-  const { company, title, description, startDate, endDate } = req.body;
   try {
+    const validated = experienceSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { company, title, description, startDate, endDate } = validated.data;
+    
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
     const experience = await prisma.experience.create({
       data: {
@@ -230,8 +265,10 @@ router.post('/experience', async (req, res) => {
 });
 
 router.put('/experience/:id', async (req, res) => {
-  const { description } = req.body;
   try {
+    if (!req.body.description) return res.status(400).json({ error: "Description is required" });
+    const { description } = req.body;
+    
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
     const existing = await prisma.experience.findFirst({
       where: { id: parseInt(req.params.id), candidateId: candidate.id }
@@ -273,8 +310,11 @@ router.delete('/experience/:id', async (req, res) => {
 // --- Education ---
 
 router.post('/education', async (req, res) => {
-  const { institution, degree, field, startDate, endDate } = req.body;
   try {
+    const validated = educationSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { institution, degree, field, startDate, endDate } = validated.data;
+    
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
     const education = await prisma.education.create({
       data: {
@@ -314,8 +354,11 @@ router.delete('/education/:id', async (req, res) => {
 // --- Skills ---
 
 router.post('/skill', async (req, res) => {
-  const { name, proficiency } = req.body;
   try {
+    const validated = skillSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { name, proficiency } = validated.data;
+    
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
     const skill = await prisma.skill.create({
       data: {

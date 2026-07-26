@@ -3,6 +3,8 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Plus, Trash2, Edit2, Briefcase, MapPin } from 'lucide-react';
 import { Input } from '../../components/Input';
+import { fetchApi } from '../../lib/api';
+
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -13,7 +15,7 @@ export const Jobs = () => {
   const fetchJobs = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:3000/api/jobs/company', {
+      const res = await fetchApi('/api/jobs/company', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -66,7 +68,7 @@ export const Jobs = () => {
     
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/jobs/${id}`, {
+      const res = await fetchApi(`/api/jobs/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

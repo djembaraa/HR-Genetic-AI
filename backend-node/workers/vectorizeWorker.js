@@ -32,8 +32,10 @@ const worker = new Worker('ai-jobs', async (job) => {
       formData.append('file', fs.createReadStream(filePath));
       
       const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+      const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
       const response = await fetch(`${AI_SERVICE_URL}/api/process-cv`, {
         method: 'POST',
+        headers: { 'x-api-key': AI_API_KEY },
         body: formData
       });
       
@@ -104,8 +106,10 @@ const worker = new Worker('ai-jobs', async (job) => {
     
     try {
       const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+      const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
       const response = await fetch(`${AI_SERVICE_URL}/api/vectorize-profile`, {
         method: 'POST',
+        headers: { 'x-api-key': AI_API_KEY },
         body: formData
       });
       

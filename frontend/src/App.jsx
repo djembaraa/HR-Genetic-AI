@@ -6,6 +6,7 @@ import { Footer } from './components/Footer';
 import { Button } from './components/Button';
 import { Bot, Zap, ShieldCheck, Gauge, ArrowRight, User, FileText, CheckCircle2, Building } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 
 // Pages & Layouts
 import { Login } from './pages/Login';
@@ -157,6 +158,7 @@ const LandingPage = () => (
 function App() {
   return (
     <Router>
+      <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />

@@ -14,8 +14,13 @@ router.post('/enhance', authenticateToken, requireRole('CANDIDATE'), async (req,
     const formData = new FormData();
     formData.append('text', text);
 
-    const response = await fetch('http://localhost:8000/api/enhance-resume', {
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+    const response = await fetch(`${AI_SERVICE_URL}/api/enhance-resume`, {
       method: 'POST',
+      headers: {
+        'x-api-key': AI_API_KEY
+      },
       body: formData
     });
 

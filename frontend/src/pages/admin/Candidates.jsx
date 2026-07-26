@@ -3,6 +3,10 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { User, FileText, CheckCircle2, Clock, Search, UploadCloud } from 'lucide-react';
 import { UploadForm } from '../../components/UploadForm';
+import { fetchApi } from '../../lib/api';
+import toast from 'react-hot-toast';
+
+
 
 export const Candidates = () => {
   const [candidates, setCandidates] = useState([]);
@@ -17,7 +21,7 @@ export const Candidates = () => {
   const fetchCandidates = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/hr/candidates', {
+      const res = await fetchApi('/api/hr/candidates', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -34,7 +38,7 @@ export const Candidates = () => {
   const handleDownloadPDF = async (candidateId, candidateName) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3000/api/hr/resume/pdf/${candidateId}`, {
+      const res = await fetchApi(`/api/hr/resume/pdf/${candidateId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to download PDF');
@@ -50,7 +54,7 @@ export const Candidates = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      alert('Failed to generate PDF');
+      toast.error('Failed to generate PDF');
     }
   };
 

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 import { User, Phone, Save } from 'lucide-react';
+import { fetchApi } from '../../lib/api';
+
 
 export const Profile = () => {
   const [loading, setLoading] = useState(true);
@@ -14,7 +17,7 @@ export const Profile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3000/api/auth/me', {
+        const res = await fetchApi('/api/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (res.ok) {
@@ -44,7 +47,7 @@ export const Profile = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/auth/me', {
+      const res = await fetchApi('/api/auth/me', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -94,48 +97,32 @@ export const Profile = () => {
             {message && <div className="p-3 bg-success/10 text-success rounded-md text-sm">{message}</div>}
             {error && <div className="p-3 bg-error/10 text-error rounded-md text-sm">{error}</div>}
             
-            <div>
-              <label className="block text-sm font-medium text-primary mb-1">Email Address (Read-only)</label>
-              <input 
-                disabled 
-                type="email" 
-                value={profile.email} 
-                className="w-full px-4 py-2 border border-border rounded-lg bg-background-secondary text-text-secondary" 
-              />
-            </div>
+            <Input
+              disabled
+              type="email"
+              label="Email Address (Read-only)"
+              value={profile.email}
+              className="bg-background-secondary text-text-secondary"
+            />
             
-            <div>
-              <label className="block text-sm font-medium text-primary mb-1">Full Name</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-                  <User size={16} />
-                </div>
-                <input 
-                  required 
-                  type="text" 
-                  value={profile.name}
-                  onChange={(e) => setProfile({...profile, name: e.target.value})}
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-primary" 
-                  placeholder="John Doe" 
-                />
-              </div>
-            </div>
+            <Input
+              required
+              type="text"
+              label="Full Name"
+              icon={User}
+              value={profile.name}
+              onChange={(e) => setProfile({...profile, name: e.target.value})}
+              placeholder="John Doe"
+            />
             
-            <div>
-              <label className="block text-sm font-medium text-primary mb-1">Phone Number</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-                  <Phone size={16} />
-                </div>
-                <input 
-                  type="text" 
-                  value={profile.phone}
-                  onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-primary" 
-                  placeholder="+1 (555) 000-0000" 
-                />
-              </div>
-            </div>
+            <Input
+              type="text"
+              label="Phone Number"
+              icon={Phone}
+              value={profile.phone}
+              onChange={(e) => setProfile({...profile, phone: e.target.value})}
+              placeholder="+1 (555) 000-0000"
+            />
             
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={saving} className="flex items-center gap-2">
