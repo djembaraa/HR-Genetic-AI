@@ -1,5 +1,4 @@
 const express = require('express');
-const FormData = require('form-data');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -79,8 +78,10 @@ router.post('/analyze-cv', authenticateToken, requireRole('CANDIDATE'), upload.s
   }
 
   try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const blob = new Blob([fileBuffer], { type: req.file.mimetype || 'application/pdf' });
     const formData = new FormData();
-    formData.append('file', fs.createReadStream(req.file.path));
+    formData.append('file', blob, req.file.originalname);
 
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';

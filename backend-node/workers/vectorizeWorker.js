@@ -1,6 +1,5 @@
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
-const FormData = require('form-data');
 const fs = require('fs');
 const promClient = require('prom-client');
 const Sentry = require('@sentry/node');
@@ -26,10 +25,12 @@ const worker = new Worker('ai-jobs', async (job) => {
     console.log(`[BullMQ] Started vectorizing CV for candidate ${candidateId}...`);
     
     try {
+      const fileBuffer = fs.readFileSync(filePath);
+      const blob = new Blob([fileBuffer], { type: 'application/pdf' });
       const formData = new FormData();
       formData.append('candidate_id', candidateId.toString());
       formData.append('company_id', companyId.toString());
-      formData.append('file', fs.createReadStream(filePath));
+      formData.append('file', blob, 'cv.pdf');
       
       const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
       const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
