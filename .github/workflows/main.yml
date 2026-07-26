@@ -92,9 +92,31 @@ jobs:
       run: |
         npx wait-on http://localhost:3000
         npx wait-on http://localhost:5173
-        npx wait-on http://localhost:8000/api/process-cv
+        npx wait-on http://localhost:8000
+
+    - name: Run Backend Tests (Jest)
+      run: |
+        cd backend-node
+        npm run test
+
+    - name: Run AI Service Tests (Pytest)
+      run: |
+        cd ai-service
+        python -m pytest tests/
 
     - name: Run Cypress E2E Tests
       run: |
         cd frontend
         npx cypress run
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Simulate Continuous Deployment (Docker)
+      run: |
+        echo "Tests passed! Deploying via Docker Compose..."
+        # docker-compose up -d --build
+        echo "Deployment successful."

@@ -49,7 +49,8 @@ router.get('/profile', async (req, res) => {
       include: {
         experiences: { orderBy: { sortOrder: 'asc' } },
         educations: { orderBy: { sortOrder: 'asc' } },
-        skills: true
+        skills: true,
+        appliedJob: true
       }
     });
     if (!candidate) return res.status(404).json({ error: 'Candidate profile not found' });
@@ -72,6 +73,37 @@ router.put('/profile', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update candidate profile' });
+  }
+});
+
+// --- Job Application ---
+
+router.post('/apply/:jobId', async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    // Check if the job exists and is open
+    const job = await prisma.job.findUnique({
+      where: { id: parseInt(jobId) },
+    });
+    
+    if (!job || job.status !== 'OPEN') {
+      return res.status(404).json({ error: 'Job not found or is closed' });
+    }
+
+    // Update the candidate's appliedJobId
+    const candidate = await prisma.candidate.update({
+      where: { userId: req.user.userId },
+      data: { 
+        appliedJobId: parseInt(jobId),
+        companyId: job.companyId // Set company ID context to the job's company
+      },
+      include: { appliedJob: true }
+    });
+
+    res.json({ message: 'Successfully applied to job', candidate });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to apply for job' });
   }
 });
 

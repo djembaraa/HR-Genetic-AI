@@ -1,28 +1,70 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { MapPin, Building, Search, Briefcase } from 'lucide-react';
+import { MapPin, Building, Search, Briefcase, CheckCircle2 } from 'lucide-react';
 
 export const CandidateDashboard = () => {
   const [jobs, setJobs] = useState([]);
+  const [candidateProfile, setCandidateProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [applyingJobId, setApplyingJobId] = useState(null);
 
   useEffect(() => {
-    fetchJobs();
+    fetchData();
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      // Typically candidates see all open jobs across the platform.
-      const res = await fetch('http://localhost:3000/api/jobs');
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(data);
+      const token = localStorage.getItem('token');
+      
+      // Fetch open jobs
+      const jobsRes = await fetch('http://localhost:3000/api/jobs');
+      if (jobsRes.ok) {
+        const jobsData = await jobsRes.json();
+        setJobs(jobsData);
+      }
+
+      // Fetch candidate profile to know applied job
+      const profileRes = await fetch('http://localhost:3000/api/candidate/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setCandidateProfile(profileData);
       }
     } catch (error) {
-      console.error('Failed to fetch jobs', error);
+      console.error('Failed to fetch data', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApply = async (jobId) => {
+    const token = localStorage.getItem('token');
+    setApplyingJobId(jobId);
+    
+    try {
+      const res = await fetch(`http://localhost:3000/api/candidate/apply/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setCandidateProfile(data.candidate); // update profile to reflect new appliedJobId
+        alert('Successfully applied to the job!');
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to apply to job');
+      }
+    } catch (error) {
+      console.error('Error applying to job:', error);
+      alert('An error occurred while applying.');
+    } finally {
+      setApplyingJobId(null);
     }
   };
 
@@ -58,31 +100,50 @@ export const CandidateDashboard = () => {
               <p>No open jobs available at the moment.</p>
             </div>
           ) : (
-            jobs.map(job => (
-              <Card key={job.id} hoverable className="flex flex-col h-full">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-primary mb-1">{job.title}</h3>
-                  <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
-                    <Building size={14} />
-                    <span>{job.company?.name || 'NexHire AI'}</span>
-                    <span className="text-border">•</span>
-                    <span className="text-accent font-medium">{job.department}</span>
+            jobs.map(job => {
+              const isApplied = candidateProfile?.appliedJobId === job.id;
+              
+              return (
+                <Card key={job.id} hoverable={!isApplied} className={`flex flex-col h-full ${isApplied ? 'border-accent/50 shadow-sm ring-1 ring-accent/20' : ''}`}>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="text-lg font-bold text-primary">{job.title}</h3>
+                      {isApplied && <CheckCircle2 size={20} className="text-accent" />}
+                    </div>
+                    <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
+                      <Building size={14} />
+                      <span>{job.company?.name || 'NexHire AI'}</span>
+                      <span className="text-border">•</span>
+                      <span className="text-accent font-medium">{job.department}</span>
+                    </div>
+                    
+                    <p className="text-text-secondary text-sm line-clamp-3 mb-6">
+                      {job.description}
+                    </p>
                   </div>
                   
-                  <p className="text-text-secondary text-sm line-clamp-3 mb-6">
-                    {job.description}
-                  </p>
-                </div>
-                
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
-                  <div className="flex items-center gap-1 text-text-secondary text-sm">
-                    <MapPin size={14} />
-                    {job.location}
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
+                    <div className="flex items-center gap-1 text-text-secondary text-sm">
+                      <MapPin size={14} />
+                      {job.location}
+                    </div>
+                    {isApplied ? (
+                      <Button size="sm" variant="outline" disabled className="bg-accent/10 text-accent border-accent/20">
+                        Applied
+                      </Button>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleApply(job.id)}
+                        disabled={applyingJobId === job.id}
+                      >
+                        {applyingJobId === job.id ? 'Applying...' : 'Apply Now'}
+                      </Button>
+                    )}
                   </div>
-                  <Button size="sm">Apply Now</Button>
-                </div>
-              </Card>
-            ))
+                </Card>
+              );
+            })
           )}
         </div>
       )}

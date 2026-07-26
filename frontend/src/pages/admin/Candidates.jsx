@@ -1,48 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { User, FileText, CheckCircle2, Clock, Search } from 'lucide-react';
+import { User, FileText, CheckCircle2, Clock, Search, UploadCloud } from 'lucide-react';
+import { UploadForm } from '../../components/UploadForm';
 
 export const Candidates = () => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:3000/api/hr/candidates', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCandidates(data);
-        }
-      } catch (error) {
-        console.error('Error fetching candidates:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCandidates();
   }, []);
 
+  const fetchCandidates = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/hr/candidates', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCandidates(data);
+      }
+    } catch (error) {
+      console.error('Error fetching candidates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 relative">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-primary mb-2">Candidates</h1>
           <p className="text-text-secondary">Review applicants and their AI vectorization status.</p>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search candidates..." 
-            className="w-64 pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-primary focus:outline-none focus:border-accent"
-          />
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search candidates..." 
+              className="w-full sm:w-64 pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-primary focus:outline-none focus:border-accent"
+            />
+          </div>
+          <Button onClick={() => setShowUpload(!showUpload)} className="flex items-center gap-2 whitespace-nowrap">
+            <UploadCloud size={18} /> {showUpload ? 'Cancel' : 'Upload CV'}
+          </Button>
         </div>
       </div>
+
+      {showUpload && (
+        <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-300">
+          <UploadForm />
+        </div>
+      )}
 
       <Card padding="none">
         <div className="overflow-x-auto">
