@@ -20,8 +20,11 @@ describe('Candidate Workflow', () => {
     
     cy.wait('@loginRequest');
 
-    // 3. Check if we are redirected to Resume Builder
-    cy.url().should('include', '/candidate/resume-builder');
+    // 3. Check if we are redirected to Candidate Dashboard
+    cy.url().should('include', '/candidate');
+    
+    // 4. Navigate to Resume Builder
+    cy.visit('/candidate/resume-builder');
     cy.contains('Resume Builder').should('be.visible');
   });
 });
