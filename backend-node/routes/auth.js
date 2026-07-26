@@ -23,6 +23,18 @@ const signupSchema = z.object({
   phone: z.string().optional()
 });
 
+const employerSignupSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  name: z.string().min(1, 'Name is required'),
+  phone: z.string().optional(),
+  companyName: z.string().min(2, 'Company name must be at least 2 characters')
+});
+
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required')
@@ -73,6 +85,56 @@ router.post('/signup', authLimiter, async (req, res) => {
       return res.status(400).json({ error: error.errors[0].message });
     }
     res.status(500).json({ error: 'Server error during signup' });
+  }
+});
+
+// SIGN UP ROUTE (For Employers/HR only)
+router.post('/signup/employer', authLimiter, async (req, res) => {
+  try {
+    const { email, password, name, phone, companyName } = employerSignupSchema.parse(req.body);
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) return res.status(400).json({ error: 'Email already exists' });
+
+    // Slugify company name
+    const baseSlug = companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    let slug = baseSlug;
+    let counter = 1;
+    
+    while (await prisma.company.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create Company and Admin User in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newCompany = await tx.company.create({
+        data: {
+          name: companyName,
+          slug
+        }
+      });
+
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          role: 'ADMIN', // The first person to create a company is the ADMIN
+          companyId: newCompany.id
+        }
+      });
+
+      return newUser;
+    });
+
+    res.status(201).json({ message: 'Employer created successfully', userId: user.id });
+  } catch (error) {
+    console.error('Employer Signup Error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    res.status(500).json({ error: 'Server error during employer signup' });
   }
 });
 

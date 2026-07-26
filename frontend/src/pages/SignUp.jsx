@@ -3,18 +3,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { Mail, Lock, User, UserPlus, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Mail, Lock, User, UserPlus, ArrowLeft, Building } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { fetchApi } from '../lib/api';
 import toast from 'react-hot-toast';
-
-
 
 export const SignUp = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [isEmployer, setIsEmployer] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,10 +25,15 @@ export const SignUp = () => {
     setError('');
 
     try {
-      const res = await fetchApi('/api/auth/signup', {
+      const endpoint = isEmployer ? '/api/auth/signup/employer' : '/api/auth/signup';
+      const body = { name, email, password };
+      if (isEmployer) body.companyName = companyName;
+      else body.role = 'CANDIDATE';
+
+      const res = await fetchApi(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role: 'CANDIDATE' })
+        body: JSON.stringify(body)
       });
 
       const data = await res.json();
@@ -73,6 +78,23 @@ export const SignUp = () => {
             <p className="text-text-secondary mt-2">Join NexHire AI to accelerate your career</p>
           </div>
 
+          <div className="flex p-1 mb-6 bg-background-primary rounded-lg border border-border">
+            <button
+              type="button"
+              onClick={() => setIsEmployer(false)}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isEmployer ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
+            >
+              Candidate
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEmployer(true)}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isEmployer ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
+            >
+              Employer / HR
+            </button>
+          </div>
+
           <form onSubmit={handleSignUp} className="space-y-5">
             <Input
               label="Full Name"
@@ -94,6 +116,27 @@ export const SignUp = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             
+            <AnimatePresence>
+              {isEmployer && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <Input
+                    label="Company Name"
+                    icon={Building}
+                    type="text"
+                    required={isEmployer}
+                    placeholder="Tech Corp Inc."
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <Input
               label="Password"
               icon={Lock}
