@@ -3,7 +3,9 @@ const Redis = require('ioredis');
 const FormData = require('form-data');
 
 // Use the local docker-compose Redis connection
-const connection = new Redis('redis://localhost:6379');
+const connection = new Redis('redis://localhost:6379', {
+  maxRetriesPerRequest: null
+});
 
 const worker = new Worker('ai-jobs', async (job) => {
   console.log(`[BullMQ] Processing job ${job.id} of type ${job.name}`);
@@ -11,17 +13,54 @@ const worker = new Worker('ai-jobs', async (job) => {
   if (job.name === 'vectorize-profile') {
     const { candidateId, profileData } = job.data;
     
-    // In a real scenario, we'd generate a PDF from profileData, or just send raw text.
-    // Since our AI service expects a PDF CV (from Phase 1), we could use a library like PDFKit here.
-    // For MVP Tahap B, let's just log the async processing success.
-    
     console.log(`[BullMQ] Started vectorizing profile for candidate ${candidateId}...`);
     
-    // Simulating heavy AI processing time
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Format profile data to string
+    let profileText = `Name: ${profileData.name || 'Unknown'}\nLocation: ${profileData.location || 'Unknown'}\nSummary: ${profileData.summary || ''}\n\n`;
     
-    console.log(`[BullMQ] Completed vectorizing profile for candidate ${candidateId}`);
-    return { status: 'success', candidateId };
+    if (profileData.experiences && profileData.experiences.length > 0) {
+      profileText += "EXPERIENCE:\n";
+      profileData.experiences.forEach(e => {
+        profileText += `${e.title} at ${e.company} (${new Date(e.startDate).getFullYear()} - ${e.endDate ? new Date(e.endDate).getFullYear() : 'Present'})\n${e.description}\n\n`;
+      });
+    }
+    
+    if (profileData.educations && profileData.educations.length > 0) {
+      profileText += "EDUCATION:\n";
+      profileData.educations.forEach(e => {
+        profileText += `${e.degree} in ${e.field} from ${e.institution}\n\n`;
+      });
+    }
+    
+    if (profileData.skills && profileData.skills.length > 0) {
+      profileText += "SKILLS:\n";
+      profileData.skills.forEach(s => {
+        profileText += `${s.name} (${s.proficiency})\n`;
+      });
+    }
+    
+    // Send to Python AI Service
+    const formData = new FormData();
+    formData.append('candidate_id', candidateId.toString());
+    formData.append('profile_text', profileText);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/vectorize-profile', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`AI Service returned ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log(`[BullMQ] Completed vectorizing profile for candidate ${candidateId}: ${result.message}`);
+      return { status: 'success', candidateId };
+    } catch (error) {
+      console.error(`[BullMQ] Failed to vectorize profile for candidate ${candidateId}`, error);
+      throw error;
+    }
   }
 
 }, { connection });

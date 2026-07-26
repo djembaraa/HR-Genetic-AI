@@ -9,9 +9,14 @@ from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_core.tools import create_retriever_tool
 from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage
+from langchain_core.documents import Document
 
 load_dotenv()
+
+# Global memory for the agent (in-memory, resets on server restart)
+memory = MemorySaver()
 
 app = FastAPI(title="AI ATS Service")
 
@@ -70,6 +75,30 @@ def process_cv(candidate_id: str = Form(...), file: UploadFile = File(...)):
     
     return {"status": "success", "message": "CV processed and embedded successfully", "candidate_id": candidate_id}
 
+@app.post("/api/vectorize-profile")
+def vectorize_profile(candidate_id: str = Form(...), profile_text: str = Form(...)):
+    """
+    Receives structured profile text from Node, chunks it, and saves to ChromaDB.
+    """
+    try:
+        # Create a document from the structured text
+        docs = [Document(page_content=profile_text, metadata={"candidate_id": candidate_id})]
+        
+        # Chunk text
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
+        
+        # Store in ChromaDB
+        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        vectorstore.add_documents(documents=splits)
+        
+        return {"status": "success", "message": "Profile vectorized successfully", "candidate_id": candidate_id}
+    except Exception as e:
+        print(f"Error vectorizing profile: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/enhance-resume")
 def enhance_resume(text: str = Form(...)):
     """
@@ -93,9 +122,9 @@ def enhance_resume(text: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
-def chat_with_agent(query: str = Form(...)):
+def chat_with_agent(query: str = Form(...), thread_id: str = Form("default")):
     """
-    Chat endpoint for HR to ask questions about the candidates using RAG agent.
+    Chat endpoint for HR to ask questions about the candidates using RAG agent with memory.
     """
     try:
         # 1. Setup LLM and Vector Store
@@ -104,7 +133,7 @@ def chat_with_agent(query: str = Form(...)):
         
         # Check if DB exists
         if not os.path.exists("./chroma_db"):
-             return {"reply": "Sorry, the CV database is empty. Please upload a CV first."}
+             return {"reply": "Sorry, the CV database is empty. Please upload a CV or publish a profile first."}
              
         vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
         retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
@@ -120,10 +149,11 @@ def chat_with_agent(query: str = Form(...)):
         # 3. Setup system prompt
         system_prompt = "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."
         
-        # 4. Create and run Agent
-        agent = create_react_agent(llm, tools, state_modifier=system_prompt)
+        # 4. Create and run Agent with Memory
+        agent = create_react_agent(llm, tools, state_modifier=system_prompt, checkpointer=memory)
         
-        response = agent.invoke({"messages": [HumanMessage(content=query)]})
+        config = {"configurable": {"thread_id": thread_id}}
+        response = agent.invoke({"messages": [HumanMessage(content=query)]}, config=config)
         
         return {"reply": response["messages"][-1].content}
     except Exception as e:
