@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks, Bell } from 'lucide-react';
+import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks, Bell, Wand2 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { fetchApi } from '../lib/api';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -86,6 +86,7 @@ export const CandidateLayout = () => {
     { name: 'Job Board', path: '/candidate', icon: Briefcase },
     { name: 'My Applications', path: '/candidate/applications', icon: ListChecks },
     { name: 'My Resume', path: '/candidate/resume-builder', icon: FileText },
+    { name: 'CV Analyzer', path: '/candidate/cv-analyzer', icon: Wand2 },
     { name: 'Profile', path: '/candidate/profile', icon: User },
   ];
 

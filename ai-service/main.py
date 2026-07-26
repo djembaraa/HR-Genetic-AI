@@ -239,6 +239,78 @@ def enhance_resume(text: str = Form(...), api_key: str = Depends(get_api_key)):
         logger.error(f"Error enhancing resume: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/generate-description")
+def generate_description(title: str = Form(...), company: str = Form(...), api_key: str = Depends(get_api_key)):
+    """
+    Generates a professional resume description based purely on job title and company.
+    """
+    try:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
+        prompt = (
+            f"You are an expert Resume Writer. A user worked as a '{title}' at '{company}'. "
+            "Write 3-4 professional, impactful bullet points describing their typical responsibilities and achievements in this role. "
+            "Use strong action verbs and make it sound impressive but realistic. "
+            "Return ONLY the bullet points text, without any conversational preamble or markdown headers like ```."
+        )
+        response = invoke_llm_with_retry(llm, prompt)
+        logger.info("Resume description generated successfully.")
+        return {"generated_text": response.content}
+    except Exception as e:
+        logger.error(f"Error generating description: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/analyze-cv-pdf")
+def analyze_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_key)):
+    """
+    Receives a PDF CV, extracts text, and uses LLM to analyze it against industry standards.
+    """
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+    
+    file_path = os.path.join(UPLOAD_DIR, f"analyze_{file.filename}")
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        loader = PyPDFLoader(file_path)
+        docs = loader.load()
+        text = "\n".join([doc.page_content for doc in docs])
+        
+        if len(text.strip()) == 0:
+            raise ValueError("Could not extract any text from the PDF.")
+            
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+        prompt = (
+            "You are an expert Tech Recruiter and CV Analyst. "
+            "Analyze the following CV text against modern ATS and tech industry standards. "
+            "Return ONLY a valid JSON object with exactly these keys: "
+            "\"score\" (integer 0-100), "
+            "\"strengths\" (array of strings, what they did right), "
+            "\"weaknesses\" (array of strings, what needs improvement or is missing), "
+            "\"summary\" (string, a brief overall feedback). "
+            "Do not include any markdown headers like ```json.\n\n"
+            f"CV Text:\n{text[:15000]}"
+        )
+        
+        response = invoke_llm_with_retry(llm, prompt)
+        
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+            
+        result = json.loads(content)
+        logger.info(f"CV analysis completed. Score: {result.get('score')}")
+        return result
+    except Exception as e:
+        logger.error(f"Error analyzing CV PDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
 @app.post("/api/chat")
 def chat_with_agent(
     query: str = Form(...), 

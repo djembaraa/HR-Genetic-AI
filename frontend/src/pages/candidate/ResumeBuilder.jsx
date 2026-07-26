@@ -204,6 +204,42 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const handleGenerateDescription = async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('input-title')?.value;
+    const company = document.getElementById('input-company')?.value;
+    
+    if (!title) {
+      toast.error('Please enter a Job Title first');
+      return;
+    }
+    
+    const toastId = toast.loading('AI is generating your description...');
+    const token = localStorage.getItem('token');
+    
+    try {
+      const res = await fetchApi('/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, company })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const descInput = document.getElementById('input-description');
+        if (descInput) descInput.value = data.generated_text;
+        toast.success('Description generated!', { id: toastId });
+      } else {
+        toast.error('Failed to generate description', { id: toastId });
+      }
+    } catch (error) {
+      toast.error('Error connecting to AI service', { id: toastId });
+    }
+  };
+
   const handleVectorize = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -304,7 +340,12 @@ export const ResumeBuilder = () => {
                 <Input id="input-end-date" name="endDate" type="date" label="End Date" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-sm font-medium text-primary">Description</label>
+                  <button type="button" onClick={handleGenerateDescription} className="text-xs flex items-center gap-1 text-accent hover:text-accent-hover font-medium bg-accent/10 px-2 py-1 rounded-md transition-colors">
+                    <Wand2 size={12} /> Auto-Generate
+                  </button>
+                </div>
                 <textarea id="input-description" required name="description" rows="4" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="Describe your responsibilities and achievements..."></textarea>
             </div>
             <div className="flex justify-end">
