@@ -296,11 +296,19 @@ def analyze_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_
         response = invoke_llm_with_retry(llm, prompt)
         
         content = response.content.strip()
-        if content.startswith("```json"):
-            content = content[7:-3].strip()
-        elif content.startswith("```"):
-            content = content[3:-3].strip()
-            
+        
+        # Robustly extract JSON block if it's wrapped in markdown or has preamble
+        import re
+        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', content)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            # Try to find the first { and last }
+            start = content.find('{')
+            end = content.rfind('}')
+            if start != -1 and end != -1:
+                content = content[start:end+1]
+                
         result = json.loads(content)
         logger.info(f"CV analysis completed. Score: {result.get('score')}")
         return result
@@ -349,11 +357,17 @@ def extract_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_
         response = invoke_llm_with_retry(llm, prompt)
         
         content = response.content.strip()
-        if content.startswith("```json"):
-            content = content[7:-3].strip()
-        elif content.startswith("```"):
-            content = content[3:-3].strip()
-            
+        
+        import re
+        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', content)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            start = content.find('{')
+            end = content.rfind('}')
+            if start != -1 and end != -1:
+                content = content[start:end+1]
+                
         result = json.loads(content)
         logger.info(f"CV extraction completed.")
         return result
