@@ -22,6 +22,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { Jobs } from './pages/admin/Jobs';
 import { Candidates } from './pages/admin/Candidates';
 import { Settings } from './pages/admin/Settings';
+import { HrOnboarding } from './pages/admin/HrOnboarding';
 
 // Candidate Pages
 import { CandidateLayout } from './layouts/CandidateLayout';
@@ -171,6 +172,7 @@ function App() {
 
         {/* Protected Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN', 'HR_MANAGER', 'RECRUITER']} />}>
+          <Route path="onboarding" element={<HrOnboarding />} />
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="candidates" element={<Candidates />} />

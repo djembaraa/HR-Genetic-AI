@@ -11,7 +11,10 @@ from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_core.tools import create_retriever_tool
 from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+import requests
+from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage
 from langchain_core.documents import Document
 from loguru import logger
@@ -54,8 +57,47 @@ def invoke_llm_with_retry(llm, prompt):
 def invoke_agent_with_retry(agent, payload, config):
     return agent.invoke(payload, config=config)
 
-# Global memory for the agent (in-memory, resets on server restart)
-memory = MemorySaver()
+# Persistent memory for the agent using SQLite
+conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
+memory = SqliteSaver(conn)
+
+NODE_API_URL = os.getenv("NODE_API_URL", "http://localhost:3000/api")
+INTERNAL_API_KEY = os.getenv("AI_SERVICE_API_KEY", "default-ai-secret-key")
+
+@tool
+def get_candidate_list(company_id: str) -> str:
+    """
+    Fetches the live list of candidates that have applied to your company.
+    Returns JSON containing candidates, their IDs, and current application status.
+    Always pass the company_id provided in the system context.
+    """
+    try:
+        url = f"{NODE_API_URL}/internal/candidates/{company_id}"
+        headers = {"x-api-key": INTERNAL_API_KEY}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.text
+        return f"Failed to fetch candidates. Status: {response.status_code}"
+    except Exception as e:
+        return f"Error: {e}"
+
+@tool
+def update_candidate_status(candidate_id: int, company_id: str, new_status: str) -> str:
+    """
+    Updates the application status of a candidate. 
+    Valid statuses: 'APPLIED', 'REVIEWING', 'INTERVIEW', 'REJECTED', 'HIRED'.
+    Requires the integer candidate_id and the company_id.
+    """
+    try:
+        url = f"{NODE_API_URL}/internal/candidates/{candidate_id}/status"
+        headers = {"x-api-key": INTERNAL_API_KEY, "Content-Type": "application/json"}
+        payload = {"status": new_status, "companyId": int(company_id)}
+        response = requests.put(url, headers=headers, json=payload)
+        if response.status_code == 200:
+            return response.json().get("message", "Status updated successfully.")
+        return f"Failed to update status. Server replied: {response.text}"
+    except Exception as e:
+        return f"Error: {e}"
 
 app = FastAPI(title="AI ATS Service")
 
@@ -225,10 +267,17 @@ def chat_with_agent(
             "search_candidate_cv",
             "Searches and returns excerpts from candidate CVs. Always use this tool when asked about candidates, their skills, or experiences."
         )
-        tools = [tool]
+        tools = [tool, get_candidate_list, update_candidate_status]
         
         # 3. Setup system prompt
-        system_prompt = "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."
+        system_prompt = (
+            f"You are an intelligent HR Assistant for company_id: {company_id}. "
+            "You have autonomous Agentic capabilities. "
+            "1. Use 'search_candidate_cv' to search for technical skills and experiences from CVs. "
+            "2. Use 'get_candidate_list' to see who has applied and their IDs/status. "
+            "3. Use 'update_candidate_status' to move candidates through the pipeline (e.g. to INTERVIEW or REJECTED) when the user asks you to. "
+            "Always be proactive and helpful. If the user asks to reject someone, DO IT using the tool."
+        )
         
         # 4. Create and run Agent with Memory
         agent = create_react_agent(llm, tools, prompt=system_prompt, checkpointer=memory)

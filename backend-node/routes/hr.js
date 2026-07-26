@@ -14,6 +14,38 @@ const statusSchema = z.object({
   status: z.enum(['APPLIED', 'REVIEWING', 'INTERVIEW', 'REJECTED', 'HIRED'])
 });
 
+const companyOnboardSchema = z.object({
+  description: z.string().min(10, 'Description is too short'),
+  industry: z.string().min(2, 'Industry is required'),
+  website: z.string().optional()
+});
+
+// POST /api/hr/company/onboard
+// Endpoint for HR to complete company profile
+router.post('/company/onboard', authenticateToken, requireRole('ADMIN', 'HR_MANAGER'), async (req, res) => {
+  try {
+    const validated = companyOnboardSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res.status(400).json({ error: validated.error.errors[0].message });
+    }
+    const { description, industry, website } = validated.data;
+    
+    if (!req.user.companyId) {
+      return res.status(403).json({ error: 'User is not associated with a company' });
+    }
+
+    const updatedCompany = await prisma.company.update({
+      where: { id: req.user.companyId },
+      data: { description, industry, website }
+    });
+
+    res.json({ message: 'Company profile updated successfully', company: updatedCompany });
+  } catch (error) {
+    console.error('Company Onboard Error:', error);
+    res.status(500).json({ error: 'Failed to update company profile' });
+  }
+});
+
 // GET /api/hr/candidates
 // Fetch candidates applied to jobs in the HR's company
 router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {

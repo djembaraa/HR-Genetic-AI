@@ -11,9 +11,13 @@ datasource db {
 model Company {
   id        Int      @id @default(autoincrement())
   name      String   @unique
-  slug      String   @unique
-  users     User[]
-  jobs      Job[]
+  slug        String   @unique
+  description String?
+  industry    String?
+  website     String?
+  logoUrl     String?
+  users       User[]
+  jobs        Job[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

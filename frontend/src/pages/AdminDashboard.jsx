@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { ChatBox } from '../components/ChatBox';
 import { fetchApi } from '../lib/api';
 
 
 export const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ candidates: 0, jobs: 0 });
   const [recentCandidates, setRecentCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,14 @@ export const AdminDashboard = () => {
           }
         });
         const data = await res.json();
+        
+        if (res.ok && data.company) {
+          if (!data.company.industry || !data.company.description) {
+            navigate('/admin/onboarding');
+            return;
+          }
+        }
+
         if(res.ok && data.stats) {
           setStats(data.stats);
         }
