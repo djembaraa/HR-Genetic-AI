@@ -45,6 +45,82 @@ const aiQueue = new Queue('ai-jobs', { connection });
 router.use(authenticateToken);
 router.use(requireRole('CANDIDATE'));
 
+// Onboarding: Save full profile and trigger vectorization
+router.post('/onboard', async (req, res) => {
+  try {
+    const { location, summary, skills = [], experience = [] } = req.body;
+    
+    // Validate basics
+    if (!location) return res.status(400).json({ error: "Location is required" });
+
+    const candidate = await prisma.candidate.findUnique({
+      where: { userId: req.user.userId }
+    });
+
+    if (!candidate) return res.status(404).json({ error: "Candidate not found" });
+
+    // Transaction to update candidate, add skills, and add experience
+    await prisma.$transaction(async (tx) => {
+      // Update basic info
+      await tx.candidate.update({
+        where: { id: candidate.id },
+        data: { location, summary }
+      });
+
+      // Clear existing skills to prevent duplicates if they somehow go back and re-onboard
+      await tx.skill.deleteMany({ where: { candidateId: candidate.id } });
+      if (skills.length > 0) {
+        await tx.skill.createMany({
+          data: skills.map(s => ({
+            candidateId: candidate.id,
+            name: s,
+            proficiency: 'INTERMEDIATE'
+          }))
+        });
+      }
+
+      // Clear existing experience
+      await tx.experience.deleteMany({ where: { candidateId: candidate.id } });
+      if (experience.length > 0) {
+        await tx.experience.createMany({
+          data: experience.map((exp, i) => ({
+            candidateId: candidate.id,
+            company: exp.company,
+            title: exp.title,
+            description: exp.description || "",
+            startDate: new Date(exp.startDate),
+            endDate: exp.endDate ? new Date(exp.endDate) : null,
+            sortOrder: i
+          }))
+        });
+      }
+    });
+
+    // Automatically trigger vectorization so HR can search them immediately
+    const updatedCandidate = await prisma.candidate.findUnique({
+      where: { id: candidate.id },
+      include: { experiences: true, educations: true, skills: true, applications: { include: { job: true } } }
+    });
+
+    const companyIds = ['default', ...new Set(updatedCandidate.applications.map(app => app.job.companyId))];
+    for (const companyId of companyIds) {
+      await aiQueue.add('vectorize-profile', {
+        candidateId: updatedCandidate.id,
+        companyId: companyId,
+        profileData: updatedCandidate
+      }, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 }
+      });
+    }
+
+    res.json({ message: "Onboarding completed successfully!" });
+  } catch (error) {
+    console.error("Onboarding error:", error);
+    res.status(500).json({ error: "Failed to save onboarding data" });
+  }
+});
+
 // Trigger async vectorization of the candidate profile
 router.post('/vectorize', async (req, res) => {
   try {

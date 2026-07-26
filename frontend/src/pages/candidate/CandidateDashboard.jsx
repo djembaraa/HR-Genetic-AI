@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast';
 
 
 export const CandidateDashboard = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [candidateProfile, setCandidateProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,12 @@ export const CandidateDashboard = () => {
       });
       if (profileRes.ok) {
         const profileData = await profileRes.json();
+        
+        if (!profileData.location) {
+          navigate('/candidate/onboarding');
+          return;
+        }
+
         setCandidateProfile(profileData);
       }
     } catch (error) {

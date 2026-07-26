@@ -29,6 +29,7 @@ import { CandidateDashboard } from './pages/candidate/CandidateDashboard';
 import { ResumeBuilder } from './pages/candidate/ResumeBuilder';
 import { Profile } from './pages/candidate/Profile';
 import { MyApplications } from './pages/candidate/MyApplications';
+import { Onboarding } from './pages/candidate/Onboarding';
 
 const FeatureIcon = ({ icon: Icon }) => (
   <div className="w-12 h-12 rounded-lg bg-accent-light flex items-center justify-center mb-4">
@@ -180,6 +181,7 @@ function App() {
 
         {/* Protected Candidate Routes */}
         <Route path="/candidate" element={<ProtectedRoute allowedRoles={['CANDIDATE']} />}>
+          <Route path="onboarding" element={<Onboarding />} />
           <Route element={<CandidateLayout />}>
             <Route index element={<CandidateDashboard />} />
             <Route path="applications" element={<MyApplications />} />
