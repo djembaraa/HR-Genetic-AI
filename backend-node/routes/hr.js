@@ -45,9 +45,9 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
         const { query } = req.body;
         const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
         
-        const FormData = require('form-data');
         const formData = new FormData();
         formData.append('query', query);
+        formData.append('company_id', req.user.companyId || 'default');
         formData.append('thread_id', `hr_${req.user.userId}`); // Use HR user ID as thread_id
 
         const aiResponse = await fetch(`${AI_SERVICE_URL}/api/chat`, {

@@ -114,4 +114,29 @@ router.put('/:id', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUI
   }
 });
 
+// Admin/HR: Delete a job
+router.delete('/:id', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const existingJob = await prisma.job.findUnique({ where: { id: parseInt(id) } });
+    if (!existingJob || existingJob.companyId !== req.user.companyId) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    await prisma.job.delete({ where: { id: parseInt(id) } });
+    
+    // Invalidate public job cache safely
+    try {
+      await redis.del('jobs:all:open');
+    } catch (redisError) {
+      console.warn('Redis Del Error:', redisError.message);
+    }
+    
+    res.json({ message: 'Job deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete job' });
+  }
+});
+
 module.exports = router;

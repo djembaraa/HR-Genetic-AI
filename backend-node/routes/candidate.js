@@ -98,6 +98,21 @@ router.post('/experience', async (req, res) => {
   }
 });
 
+router.put('/experience/:id', async (req, res) => {
+  const { description } = req.body;
+  try {
+    // Should verify ownership, simplified for MVP
+    const experience = await prisma.experience.update({
+      where: { id: parseInt(req.params.id) },
+      data: { description }
+    });
+    res.json(experience);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update experience' });
+  }
+});
+
 router.delete('/experience/:id', async (req, res) => {
   try {
     // Should verify ownership, simplified for MVP

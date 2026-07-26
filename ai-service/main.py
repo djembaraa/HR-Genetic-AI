@@ -16,7 +16,7 @@ from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
 import redis
-from langchain.globals import set_llm_cache
+from langchain_core.globals import set_llm_cache
 from langchain_community.cache import RedisCache
 
 class InterceptHandler(logging.Handler):
@@ -146,7 +146,7 @@ def enhance_resume(text: str = Form(...)):
     using active verbs and emphasizing metrics.
     """
     try:
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
         prompt = (
             "You are an expert Resume Writer and ATS Optimizer. "
             "Rewrite the following text into professional, impactful bullet points. "
@@ -169,7 +169,7 @@ def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_
     """
     try:
         # 1. Setup LLM and Vector Store
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         
         # Check if DB exists
@@ -191,13 +191,20 @@ def chat_with_agent(query: str = Form(...), company_id: str = Form(...), thread_
         system_prompt = "You are an intelligent HR Assistant. Your job is to help HR professionals find the best candidates based on the uploaded CVs. Always use the 'search_candidate_cv' tool to search for candidate information before answering. Be professional and objective. Answer in English."
         
         # 4. Create and run Agent with Memory
-        agent = create_react_agent(llm, tools, state_modifier=system_prompt, checkpointer=memory)
+        agent = create_react_agent(llm, tools, prompt=system_prompt, checkpointer=memory)
         
         config = {"configurable": {"thread_id": thread_id}}
         response = invoke_agent_with_retry(agent, {"messages": [HumanMessage(content=query)]}, config)
         
+        content = response["messages"][-1].content
+        if isinstance(content, list):
+            # Extract text from blocks if it's a list of dicts
+            text_reply = " ".join([block.get("text", "") for block in content if isinstance(block, dict) and block.get("type") == "text"])
+        else:
+            text_reply = content
+            
         logger.info(f"Chat agent processed query in thread {thread_id}.")
-        return {"reply": response["messages"][-1].content}
+        return {"reply": text_reply}
     except Exception as e:
         logger.error(f"Agent Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

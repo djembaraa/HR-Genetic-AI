@@ -29,54 +29,54 @@ export const AdminDashboard = () => {
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <h1 style={{ fontSize: '1.875rem' }}>Dashboard Overview</h1>
+    <div className="flex flex-col gap-8">
+      <h1 className="text-3xl font-bold text-primary">Dashboard Overview</h1>
       
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-        <Card style={{ padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-light)', fontSize: '0.875rem', textTransform: 'uppercase' }}>Total Candidates</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>{loading ? '-' : stats.candidates}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="p-6">
+          <h3 className="text-text-light text-sm uppercase font-semibold">Total Candidates</h3>
+          <div className="text-4xl font-bold mt-2">{loading ? '-' : stats.candidates}</div>
         </Card>
-        <Card style={{ padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-light)', fontSize: '0.875rem', textTransform: 'uppercase' }}>Active Jobs</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem' }}>{loading ? '-' : stats.jobs}</div>
+        <Card className="p-6">
+          <h3 className="text-text-light text-sm uppercase font-semibold">Active Jobs</h3>
+          <div className="text-4xl font-bold mt-2">{loading ? '-' : stats.jobs}</div>
         </Card>
-        <Card style={{ padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-light)', fontSize: '0.875rem', textTransform: 'uppercase' }}>AI Processed</h3>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700, marginTop: '0.5rem', color: '#10b981' }}>100%</div>
+        <Card className="p-6">
+          <h3 className="text-text-light text-sm uppercase font-semibold">AI Processed</h3>
+          <div className="text-4xl font-bold mt-2 text-success">100%</div>
         </Card>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Data Table Placeholder */}
-        <Card style={{ padding: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Recent Candidates</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+        <Card className="p-6 lg:col-span-2 overflow-x-auto">
+          <h2 className="text-xl font-bold mb-4 text-primary">Recent Candidates</h2>
+          <table className="w-full border-collapse text-sm min-w-[500px]">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-light)' }}>
-                <th style={{ padding: '1rem 0' }}>Name</th>
-                <th style={{ padding: '1rem 0' }}>Email</th>
-                <th style={{ padding: '1rem 0' }}>Date Applied</th>
-                <th style={{ padding: '1rem 0' }}>Status</th>
+              <tr className="border-b border-border text-left text-text-light">
+                <th className="py-4">Name</th>
+                <th className="py-4">Email</th>
+                <th className="py-4">Date Applied</th>
+                <th className="py-4">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="4" style={{ padding: '1rem 0', textAlign: 'center' }}>Loading...</td></tr>
+                <tr><td colSpan="4" className="py-4 text-center">Loading...</td></tr>
               ) : stats.candidates === 0 ? (
-                <tr><td colSpan="4" style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-light)' }}>No candidates found in database</td></tr>
+                <tr><td colSpan="4" className="py-4 text-center text-text-light">No candidates found in database</td></tr>
               ) : (
-                 <tr><td colSpan="4" style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-light)' }}>Data will be mapped here</td></tr>
+                 <tr><td colSpan="4" className="py-4 text-center text-text-light">Data will be mapped here</td></tr>
               )}
             </tbody>
           </table>
         </Card>
 
         {/* AI HR Assistant */}
-        <Card style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>AI HR Assistant</h2>
-          <div style={{ flexGrow: 1 }}>
+        <Card className="flex flex-col p-6 h-[600px] lg:h-auto">
+          <h2 className="text-xl font-bold mb-4 text-primary">AI HR Assistant</h2>
+          <div className="flex-grow overflow-hidden">
             <ChatBox />
           </div>
         </Card>

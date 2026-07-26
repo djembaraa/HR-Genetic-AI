@@ -18,11 +18,13 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Jobs } from './pages/admin/Jobs';
 import { Candidates } from './pages/admin/Candidates';
+import { Settings } from './pages/admin/Settings';
 
 // Candidate Pages
 import { CandidateLayout } from './layouts/CandidateLayout';
 import { CandidateDashboard } from './pages/candidate/CandidateDashboard';
 import { ResumeBuilder } from './pages/candidate/ResumeBuilder';
+import { Profile } from './pages/candidate/Profile';
 
 const FeatureIcon = ({ icon: Icon }) => (
   <div className="w-12 h-12 rounded-lg bg-accent-light flex items-center justify-center mb-4">
@@ -169,7 +171,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="candidates" element={<Candidates />} />
             <Route path="jobs" element={<Jobs />} />
-            <Route path="settings" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Settings Module</h2><p className="text-text-secondary">Coming soon...</p></div>} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
 
@@ -178,7 +180,7 @@ function App() {
           <Route element={<CandidateLayout />}>
             <Route index element={<CandidateDashboard />} />
             <Route path="resume-builder" element={<ResumeBuilder />} />
-            <Route path="profile" element={<div className="p-8"><h2 className="text-2xl font-bold mb-4">Profile Settings</h2><p className="text-text-secondary">Coming soon...</p></div>} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
       </Routes>

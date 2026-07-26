@@ -72,6 +72,80 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const addEducation = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    
+    try {
+      const res = await fetch('http://localhost:3000/api/candidate/education', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        e.target.reset();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteEducation = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:3000/api/candidate/education/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) fetchProfile();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const addSkill = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    
+    try {
+      const res = await fetch('http://localhost:3000/api/candidate/skill', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        e.target.reset();
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteSkill = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:3000/api/candidate/skill/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) fetchProfile();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleEnhanceWithAI = async (exp) => {
     setCurrentExpId(exp.id);
     setShowAiModal(true);
@@ -101,10 +175,24 @@ export const ResumeBuilder = () => {
   };
 
   const acceptAiSuggestion = async () => {
-    // Ideally we update the experience via PUT request, but for MVP we will just close the modal.
-    // To implement fully: call PUT /api/candidate/experience/:id
-    setShowAiModal(false);
-    alert('AI Suggestion Accepted! (Backend PUT pending)');
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:3000/api/candidate/experience/${currentExpId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ description: aiSuggestion })
+      });
+      if (res.ok) {
+        setShowAiModal(false);
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Failed to save AI suggestion');
+    }
   };
 
   const handleVectorize = async () => {
@@ -218,21 +306,84 @@ export const ResumeBuilder = () => {
           </div>
         </Card>
 
-        {/* Placeholders for Education & Skills */}
+        {/* Education Form */}
         <Card>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-6">
             <GraduationCap className="text-accent" size={24} />
             <h2 className="text-xl font-bold text-primary">Education</h2>
           </div>
-          <p className="text-text-secondary text-sm">Form logic follows the same pattern as Experience.</p>
+          
+          <form onSubmit={addEducation} className="space-y-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input required name="institution" type="text" label="Institution" placeholder="e.g. MIT" />
+                <Input required name="degree" type="text" label="Degree" placeholder="e.g. BSc" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Input required name="field" type="text" label="Field of Study" placeholder="e.g. Computer Science" />
+                <Input required name="startDate" type="date" label="Start Date" />
+                <Input name="endDate" type="date" label="End Date" />
+              </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="flex items-center gap-2">
+                <Plus size={16} /> Add Education
+              </Button>
+            </div>
+          </form>
+
+          {/* List of Education */}
+          <div className="space-y-4">
+            {profile?.educations?.map(edu => (
+              <div key={edu.id} className="p-4 border border-border rounded-lg bg-background flex flex-col gap-2 relative group">
+                <button onClick={() => deleteEducation(edu.id)} className="absolute top-4 right-4 text-text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Trash2 size={18} />
+                </button>
+                <h3 className="font-bold text-primary">{edu.degree} in {edu.field}</h3>
+                <span className="text-sm text-text-secondary">{edu.institution}</span>
+                <span className="text-xs text-text-muted">
+                  {new Date(edu.startDate).toLocaleDateString()} - {edu.endDate ? new Date(edu.endDate).toLocaleDateString() : 'Present'}
+                </span>
+              </div>
+            ))}
+          </div>
         </Card>
 
+        {/* Skills Form */}
         <Card>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-6">
             <Award className="text-accent" size={24} />
             <h2 className="text-xl font-bold text-primary">Skills</h2>
           </div>
-          <p className="text-text-secondary text-sm">Form logic follows the same pattern as Experience.</p>
+          
+          <form onSubmit={addSkill} className="flex gap-4 mb-8 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-primary mb-1">Skill Name</label>
+              <input required name="name" type="text" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary" placeholder="e.g. React.js" />
+            </div>
+            <div className="w-48">
+              <label className="block text-sm font-medium text-primary mb-1">Proficiency</label>
+              <select name="proficiency" className="w-full px-4 py-2 border border-border rounded-lg bg-background text-primary">
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="EXPERT">Expert</option>
+              </select>
+            </div>
+            <Button type="submit" className="flex items-center gap-2">
+              <Plus size={16} /> Add
+            </Button>
+          </form>
+
+          {/* List of Skills */}
+          <div className="flex flex-wrap gap-2">
+            {profile?.skills?.map(skill => (
+              <div key={skill.id} className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-full text-sm">
+                <span className="font-medium text-primary">{skill.name}</span>
+                <span className="text-xs text-text-muted">({skill.proficiency.toLowerCase()})</span>
+                <button onClick={() => deleteSkill(skill.id)} className="text-text-muted hover:text-danger ml-1">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
@@ -267,6 +418,34 @@ export const ResumeBuilder = () => {
                       </ul>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {profile?.educations?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Education</h2>
+                <div className="space-y-4">
+                  {profile.educations.map(edu => (
+                    <div key={edu.id}>
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className="font-bold text-md">{edu.institution}</h3>
+                        <span className="text-sm text-gray-600">
+                          {new Date(edu.startDate).toLocaleDateString(undefined, {year:'numeric'})} - {edu.endDate ? new Date(edu.endDate).toLocaleDateString(undefined, {year:'numeric'}) : 'Present'}
+                        </span>
+                      </div>
+                      <div className="italic text-sm text-gray-800 mb-2">{edu.degree} in {edu.field}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {profile?.skills?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Skills</h2>
+                <div className="text-sm text-gray-800">
+                  {profile.skills.map(skill => skill.name).join(', ')}
                 </div>
               </div>
             )}

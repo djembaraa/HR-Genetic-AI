@@ -57,10 +57,10 @@ services:
       context: ./ai-service
       dockerfile: Dockerfile
     container_name: hr_genetic_ai_service
+    env_file:
+      - ./ai-service/.env
     environment:
       - REDIS_URL=redis://redis:6379
-      # Must pass GOOGLE_API_KEY from host env
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     ports:
       - "8000:8000"
     depends_on:

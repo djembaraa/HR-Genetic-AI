@@ -2,6 +2,15 @@ const { Worker } = require('bullmq');
 const Redis = require('ioredis');
 const FormData = require('form-data');
 const fs = require('fs');
+const promClient = require('prom-client');
+const Sentry = require('@sentry/node');
+
+// Define Prometheus metrics for Worker
+const workerJobsProcessed = new promClient.Counter({
+  name: 'worker_jobs_processed_total',
+  help: 'Total number of jobs processed by BullMQ worker',
+  labelNames: ['job_name', 'status'] // status: success, failed, dlq
+});
 
 // Use the environment Redis connection
 const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
@@ -9,8 +18,6 @@ const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', 
 });
 
 const worker = new Worker('ai-jobs', async (job) => {
-  console.log(`[BullMQ] Processing job ${job.id} of type ${job.name}`);
-  
   console.log(`[BullMQ] Processing job ${job.id} of type ${job.name}`);
   
   if (job.name === 'vectorize-cv') {
@@ -104,10 +111,33 @@ const worker = new Worker('ai-jobs', async (job) => {
 
 worker.on('completed', job => {
   console.log(`[BullMQ] Job ${job.id} has completed!`);
+  workerJobsProcessed.inc({ job_name: job.name, status: 'success' });
 });
 
-worker.on('failed', (job, err) => {
+worker.on('failed', async (job, err) => {
   console.log(`[BullMQ] Job ${job.id} has failed with ${err.message}`);
+  workerJobsProcessed.inc({ job_name: job.name, status: 'failed' });
+  
+  if (Sentry.isInitialized && Sentry.isInitialized()) {
+    Sentry.captureException(err, { tags: { jobName: job.name, jobId: job.id } });
+  }
+
+  // Check if job has exhausted retries to move to DLQ
+  if (job.attemptsMade >= job.opts.attempts) {
+    console.error(`[BullMQ] Job ${job.id} exhausted retries. Moving to DLQ.`);
+    workerJobsProcessed.inc({ job_name: job.name, status: 'dlq' });
+    try {
+      await connection.sadd('dlq:ai-jobs', JSON.stringify({
+        id: job.id,
+        name: job.name,
+        data: job.data,
+        error: err.message,
+        failedAt: new Date().toISOString()
+      }));
+    } catch (dlqErr) {
+      console.error(`[BullMQ] Failed to push to DLQ:`, dlqErr);
+    }
+  }
 });
 
 module.exports = worker;

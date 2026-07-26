@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
+  max: 50, // Limit each IP to 50 requests per `window` (here, per 15 minutes)
   message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -197,6 +197,61 @@ router.post('/admin/assign-role', authenticateToken, requireRole('ADMIN'), async
   } catch (error) {
     console.error('Role Assignment Error:', error);
     res.status(500).json({ error: 'Failed to assign role' });
+  }
+});
+
+// GET CURRENT USER PROFILE
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { id: true, email: true, role: true, companyId: true, candidate: true }
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    console.error('Fetch Profile Error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// UPDATE CURRENT USER PROFILE (Password & Details)
+router.put('/me', authenticateToken, async (req, res) => {
+  const { password, name, phone } = req.body;
+  try {
+    let updateData = {};
+    if (password) {
+      if (password.length < 8) return res.status(400).json({ error: 'Password too short' });
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+    
+    await prisma.$transaction(async (tx) => {
+      if (Object.keys(updateData).length > 0) {
+        await tx.user.update({
+          where: { id: req.user.userId },
+          data: updateData
+        });
+      }
+      
+      if (name !== undefined || phone !== undefined) {
+        // Update candidate profile if they are a candidate
+        if (req.user.role === 'CANDIDATE') {
+          await tx.candidate.upsert({
+            where: { userId: req.user.userId },
+            update: { 
+              ...(name && { name }), 
+              ...(phone !== undefined && { phone }) 
+            },
+            create: { userId: req.user.userId, email: req.user.email, name: name || 'User', phone }
+          });
+        }
+      }
+    });
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 

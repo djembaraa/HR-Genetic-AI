@@ -9,3 +9,5 @@ langchain-google-genai
 pypdf
 python-dotenv
 aiofiles
+loguru
+langgraph
