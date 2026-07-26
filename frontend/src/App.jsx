@@ -53,7 +53,6 @@ const LandingPage = () => (
           className="w-full max-w-4xl"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background-secondary border border-border text-sm font-medium text-primary mb-8 shadow-sm">
-            <span className="flex h-2 w-2 rounded-full bg-success"></span>
             NexHire AI v2.0 - The Dual-Sided Talent Platform
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold text-primary leading-[1.1] tracking-tight mb-8">
