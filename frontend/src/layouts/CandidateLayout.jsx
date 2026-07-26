@@ -1,13 +1,18 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks } from 'lucide-react';
+import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks, Bell } from 'lucide-react';
 import { Button } from '../components/Button';
+import { fetchApi } from '../lib/api';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export const CandidateLayout = () => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const navigate = useNavigate();
   const location = useLocation();
+  const [notifications, setNotifications] = React.useState([]);
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const notifRef = React.useRef(null);
   
   if (!token || !userStr) {
     return <Navigate to="/login" replace />;
@@ -30,6 +35,52 @@ export const CandidateLayout = () => {
     localStorage.removeItem('user');
     navigate('/login');
   };
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetchApi('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleRead = async (id, link) => {
+    try {
+      await fetchApi(`/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchNotifications();
+      setShowNotifications(false);
+      if (link) navigate(link);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const navItems = [
     { name: 'Job Board', path: '/candidate', icon: Briefcase },
@@ -71,7 +122,61 @@ export const CandidateLayout = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-text-secondary hidden sm:inline-block">
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 text-text-secondary hover:text-primary transition-colors relative"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-background"></span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-80 bg-background border border-border rounded-xl shadow-float overflow-hidden z-50"
+                >
+                  <div className="p-4 border-b border-border flex justify-between items-center bg-background-secondary">
+                    <h3 className="font-bold text-primary">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <span className="text-xs bg-accent text-white px-2 py-0.5 rounded-full font-medium">{unreadCount} New</span>
+                    )}
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-text-muted">No notifications yet.</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div 
+                          key={n.id} 
+                          onClick={() => handleRead(n.id, n.link)}
+                          className={`p-4 border-b border-border/50 cursor-pointer hover:bg-background-secondary transition-colors ${!n.isRead ? 'bg-primary/5' : ''}`}
+                        >
+                          <div className="flex gap-3">
+                            <div className="mt-1">
+                              {!n.isRead ? <div className="w-2 h-2 rounded-full bg-accent"></div> : <div className="w-2 h-2"></div>}
+                            </div>
+                            <div>
+                              <p className={`text-sm ${!n.isRead ? 'font-bold text-primary' : 'font-medium text-text-secondary'}`}>{n.title}</p>
+                              <p className="text-xs text-text-muted mt-1 leading-relaxed">{n.message}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <span className="text-sm font-medium text-text-secondary hidden sm:inline-block border-l border-border pl-4">
             {user.email}
           </span>
           <Button variant="outline" size="sm" onClick={handleLogout} className="flex gap-2 items-center">

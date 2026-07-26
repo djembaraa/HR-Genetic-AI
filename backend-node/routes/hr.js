@@ -86,6 +86,41 @@ router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 
   }
 });
 
+// GET /api/hr/candidates/:id
+// Fetch full candidate profile for HR viewing
+router.get('/candidates/:id', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
+  try {
+    const candidateId = parseInt(req.params.id);
+    const companyId = req.user.companyId;
+
+    if (!companyId) return res.status(403).json({ error: 'HR user has no associated company.' });
+
+    // Verify candidate applied to this company
+    const candidate = await prisma.candidate.findFirst({
+      where: { 
+        id: candidateId,
+        applications: {
+          some: { job: { companyId: companyId } }
+        }
+      },
+      include: {
+        experiences: { orderBy: { sortOrder: 'asc' } },
+        educations: { orderBy: { sortOrder: 'asc' } },
+        skills: true
+      }
+    });
+
+    if (!candidate) {
+      return res.status(404).json({ error: 'Candidate profile not found or not applied to your company' });
+    }
+
+    res.json(candidate);
+  } catch (error) {
+    console.error('Fetch Candidate Profile Error:', error);
+    res.status(500).json({ error: 'Failed to fetch candidate profile' });
+  }
+});
+
 // POST /api/hr/chat
 // Endpoint to chat with HR Agent
 router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {

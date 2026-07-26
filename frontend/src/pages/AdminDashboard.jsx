@@ -67,7 +67,13 @@ export const AdminDashboard = () => {
         </Card>
         <Card className="p-6">
           <h3 className="text-text-light text-sm uppercase font-semibold">AI Processed</h3>
-          <div className="text-4xl font-bold mt-2 text-success">100%</div>
+          <div className="text-4xl font-bold mt-2 text-success">
+            {loading ? '-' : (
+              stats.candidates > 0 
+                ? `${Math.round((stats.processedCandidates / stats.candidates) * 100)}%` 
+                : '0%'
+            )}
+          </div>
         </Card>
       </div>
 

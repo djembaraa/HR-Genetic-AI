@@ -77,6 +77,31 @@ router.post('/', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITE
       console.warn('Redis Del Error:', redisError.message);
     }
     
+    // --- MATCHMAKING ENGINE ---
+    if (location && status === 'OPEN') {
+      try {
+        const matchingCandidates = await prisma.candidate.findMany({
+          where: { location: location },
+          select: { userId: true, name: true }
+        });
+
+        if (matchingCandidates.length > 0) {
+          const company = await prisma.company.findUnique({ where: { id: req.user.companyId } });
+          const notificationsData = matchingCandidates.map(c => ({
+            userId: c.userId,
+            title: '🔥 Lowongan Baru di Kotamu!',
+            message: `${company?.name || 'Sebuah Perusahaan'} baru saja membuka lowongan ${title} di ${location}.`,
+            link: '/candidate'
+          }));
+          
+          await prisma.notification.createMany({ data: notificationsData });
+          console.log(`Sent match notifications to ${matchingCandidates.length} candidates.`);
+        }
+      } catch (matchError) {
+        console.error('Matchmaking error:', matchError);
+      }
+    }
+
     res.status(201).json(job);
   } catch (error) {
     console.error(error);

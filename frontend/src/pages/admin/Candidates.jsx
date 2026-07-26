@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { User, FileText, CheckCircle2, Clock, Search, UploadCloud } from 'lucide-react';
+import { User, FileText, CheckCircle2, Clock, Search, UploadCloud, X, Briefcase, GraduationCap, Award } from 'lucide-react';
 import { UploadForm } from '../../components/UploadForm';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
@@ -10,7 +10,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 export const Candidates = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCandidateId, setSelectedCandidateId] = useState(null);
   const queryClient = useQueryClient();
+
+  const { data: profileDetail, isFetching: loadingProfile } = useQuery({
+    queryKey: ['hr_candidate_profile', selectedCandidateId],
+    queryFn: async () => {
+      if (!selectedCandidateId) return null;
+      const token = localStorage.getItem('token');
+      const res = await fetchApi(`/api/hr/candidates/${selectedCandidateId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch profile');
+      return res.json();
+    },
+    enabled: !!selectedCandidateId
+  });
 
   const { data: candidates = [], isLoading: loading } = useQuery({
     queryKey: ['hr_candidates'],
@@ -189,7 +204,7 @@ export const Candidates = () => {
                       </Button>
                     </td>
                     <td className="p-4 text-right">
-                      <Button variant="secondary" size="sm" disabled className="opacity-50 cursor-not-allowed" title="Coming in Phase 5">View Profile</Button>
+                      <Button variant="secondary" size="sm" onClick={() => setSelectedCandidateId(candidate.id)}>View Profile</Button>
                     </td>
                   </tr>
                 ));
@@ -198,6 +213,80 @@ export const Candidates = () => {
           </table>
         </div>
       </Card>
+
+      {/* Candidate Profile Modal */}
+      {selectedCandidateId && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border-accent border-t-4 shadow-2xl relative bg-gradient-to-br from-background to-background-tertiary">
+            <button onClick={() => setSelectedCandidateId(null)} className="absolute top-4 right-4 text-text-muted hover:text-primary z-10">
+              <X size={24} />
+            </button>
+            
+            {loadingProfile ? (
+              <div className="p-12 text-center text-text-secondary animate-pulse">Loading profile data...</div>
+            ) : profileDetail ? (
+              <div className="space-y-8">
+                <div className="flex items-start gap-6 border-b border-border pb-6">
+                  <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0">
+                    <User size={40} />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-primary">{profileDetail.name}</h2>
+                    <p className="text-text-secondary mt-1">{profileDetail.email} {profileDetail.phone ? `| ${profileDetail.phone}` : ''} {profileDetail.location ? `| ${profileDetail.location}` : ''}</p>
+                    {profileDetail.summary && (
+                      <p className="mt-4 text-text-secondary leading-relaxed bg-background-secondary p-4 rounded-lg border border-border">{profileDetail.summary}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2"><Briefcase className="text-accent" size={20}/> Experience</h3>
+                      <div className="space-y-4">
+                        {profileDetail.experiences?.length > 0 ? profileDetail.experiences.map(exp => (
+                          <div key={exp.id} className="border-l-2 border-border pl-4">
+                            <h4 className="font-bold text-primary">{exp.title}</h4>
+                            <p className="text-sm text-text-secondary">{exp.company} • {new Date(exp.startDate).getFullYear()} - {exp.endDate ? new Date(exp.endDate).getFullYear() : 'Present'}</p>
+                            <p className="mt-2 text-sm text-text-secondary whitespace-pre-wrap line-clamp-3 hover:line-clamp-none transition-all">{exp.description}</p>
+                          </div>
+                        )) : <p className="text-sm text-text-muted">No experience listed.</p>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2"><GraduationCap className="text-accent" size={20}/> Education</h3>
+                      <div className="space-y-4">
+                        {profileDetail.educations?.length > 0 ? profileDetail.educations.map(edu => (
+                          <div key={edu.id} className="border-l-2 border-border pl-4">
+                            <h4 className="font-bold text-primary">{edu.degree} in {edu.field}</h4>
+                            <p className="text-sm text-text-secondary">{edu.institution} • {new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Present'}</p>
+                          </div>
+                        )) : <p className="text-sm text-text-muted">No education listed.</p>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2"><Award className="text-accent" size={20}/> Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profileDetail.skills?.length > 0 ? profileDetail.skills.map(skill => (
+                          <span key={skill.id} className="px-3 py-1 bg-background-secondary border border-border rounded-full text-sm font-medium text-primary">
+                            {skill.name} <span className="text-text-muted text-xs font-normal">({skill.proficiency.toLowerCase()})</span>
+                          </span>
+                        )) : <p className="text-sm text-text-muted">No skills listed.</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-12 text-center text-error">Failed to load profile.</div>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

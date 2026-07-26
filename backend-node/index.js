@@ -99,6 +99,7 @@ const authRoutes = require('./routes/auth');
 const jobsRoutes = require('./routes/jobs');
 const candidateRoutes = require('./routes/candidate');
 const aiRoutes = require('./routes/ai');
+const notificationRoutes = require('./routes/notifications');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
@@ -107,6 +108,7 @@ app.use('/api/candidate/resume/pdf', require('./routes/resume-pdf'));
 app.use('/api/hr', require('./routes/hr'));
 app.use('/api/ai', aiRoutes);
 app.use('/api/internal', require('./routes/ai-internal'));
+app.use('/api/notifications', notificationRoutes);
 
 // FastAPI Service URL (imported globally if needed, though used in specific routes)
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
@@ -128,19 +130,29 @@ app.get('/api/admin/dashboard', authenticateToken, requireRole('ADMIN', 'HR_MANA
       where: { id: companyId }
     });
 
-    // Scoped dashboard stats
-    res.json({
-      message: `Welcome Admin ${req.user.email}`,
-      company, // include company info
-      stats: {
-        candidates: await prisma.candidate.count({
-          where: { applications: { some: { job: { companyId } } } }
-        }),
-        jobs: await prisma.job.count({
-          where: { companyId }
-        })
-      }
-    });
+      // Scoped dashboard stats
+      const totalCandidates = await prisma.candidate.count({
+        where: { applications: { some: { job: { companyId } } } }
+      });
+      const processedCandidates = await prisma.candidate.count({
+        where: { 
+          applications: { some: { job: { companyId } } },
+          vectorizationStatus: 'COMPLETED'
+        }
+      });
+      const totalJobs = await prisma.job.count({
+        where: { companyId }
+      });
+
+      res.json({
+        message: `Welcome Admin ${req.user.email}`,
+        company, // include company info
+        stats: {
+          candidates: totalCandidates,
+          processedCandidates: processedCandidates,
+          jobs: totalJobs
+        }
+      });
   } catch (error) {
     console.error('Dashboard error:', error);
     res.status(500).json({ error: 'Failed to load dashboard' });
