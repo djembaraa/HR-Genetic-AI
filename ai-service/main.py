@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -103,7 +104,19 @@ def update_candidate_status(candidate_id: int, company_id: str, new_status: str)
     except Exception as e:
         return f"Error: {e}"
 
-app = FastAPI(title="AI ATS Service")
+_embeddings = None
+_vectorstore = None
+_llm = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global _embeddings, _vectorstore, _llm
+    _embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    _llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+    _vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=_embeddings)
+    yield
+
+app = FastAPI(title="AI ATS Service", lifespan=lifespan)
 
 # Authentication setup
 API_KEY_NAME = "x-api-key"
@@ -164,16 +177,15 @@ def process_cv(
             split.metadata["candidate_id"] = candidate_id
             split.metadata["company_id"] = company_id
             
-        # 3. Create Embeddings and Store in ChromaDB
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        # 3. Use global VectorStore
+        global _vectorstore
         
         # Delete existing docs for this candidate to prevent duplicates
-        existing = vectorstore.get(where={"candidate_id": candidate_id})
+        existing = _vectorstore.get(where={"candidate_id": candidate_id})
         if existing and existing.get("ids"):
-            vectorstore.delete(ids=existing["ids"])
+            _vectorstore.delete(ids=existing["ids"])
             
-        vectorstore.add_documents(documents=splits)
+        _vectorstore.add_documents(documents=splits)
         logger.info(f"CV for candidate {candidate_id} embedded successfully.")
     except Exception as e:
         logger.error(f"Error processing CV: {e}")
@@ -203,15 +215,14 @@ def vectorize_profile(
         splits = text_splitter.split_documents(docs)
         
         # Store in ChromaDB
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
+        global _vectorstore
         
         # Delete existing docs for this candidate
-        existing = vectorstore.get(where={"candidate_id": candidate_id})
+        existing = _vectorstore.get(where={"candidate_id": candidate_id})
         if existing and existing.get("ids"):
-            vectorstore.delete(ids=existing["ids"])
+            _vectorstore.delete(ids=existing["ids"])
             
-        vectorstore.add_documents(documents=splits)
+        _vectorstore.add_documents(documents=splits)
         
         logger.info(f"Profile for candidate {candidate_id} vectorized successfully.")
         return {"status": "success", "message": "Profile vectorized successfully", "candidate_id": candidate_id}
@@ -411,15 +422,13 @@ def chat_with_agent(
         sanitized_query = sanitize_query(query)
 
         # 1. Setup LLM and Vector Store
-        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+        global _llm, _vectorstore
         
-        # Check if DB exists
-        if not os.path.exists("./chroma_db"):
+        # Check if DB is empty
+        if _vectorstore._collection.count() == 0:
              return {"reply": "Sorry, the CV database is empty. Please upload a CV or publish a profile first."}
              
-        vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 5, "filter": {"company_id": company_id}})
+        retriever = _vectorstore.as_retriever(search_kwargs={"k": 5, "filter": {"company_id": company_id}})
         
         # 2. Create Retriever Tool
         tool = create_retriever_tool(
@@ -440,7 +449,7 @@ def chat_with_agent(
         )
         
         # 4. Create and run Agent with Memory
-        agent = create_react_agent(llm, tools, prompt=system_prompt, checkpointer=memory)
+        agent = create_react_agent(_llm, tools, prompt=system_prompt, checkpointer=memory)
         
         config = {"configurable": {"thread_id": thread_id}}
         response = invoke_agent_with_retry(agent, {"messages": [HumanMessage(content=sanitized_query)]}, config)
