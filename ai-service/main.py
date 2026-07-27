@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from fastapi.security.api_key import APIKeyHeader
 import os
 import shutil
