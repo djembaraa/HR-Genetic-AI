@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Settings, LogOut, X, Building } from 'lucide-react';
 import { cn } from './Card'; // or any util file where cn is exported
 
 export const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -47,6 +47,9 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
         </NavLink>
         <NavLink to="/admin/jobs" className={navItemClass} onClick={() => setIsOpen && setIsOpen(false)}>
           <Briefcase size={20} /> Jobs
+        </NavLink>
+        <NavLink to="/admin/company" className={navItemClass} onClick={() => setIsOpen && setIsOpen(false)}>
+          <Building size={20} /> Company Profile
         </NavLink>
         <NavLink to="/admin/settings" className={navItemClass} onClick={() => setIsOpen && setIsOpen(false)}>
           <Settings size={20} /> Settings

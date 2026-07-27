@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles, X } from 'lucide-react';
@@ -18,6 +18,10 @@ export const CandidateDashboard = () => {
   const [recommendedJobIds, setRecommendedJobIds] = useState([]);
   const [isAiMatching, setIsAiMatching] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 9;
 
   useEffect(() => {
     fetchData();
@@ -131,10 +135,13 @@ export const CandidateDashboard = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
           <input 
             type="text" 
-            placeholder="Search jobs..." 
+            placeholder="Search jobs, companies, or departments..." 
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-primary focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition-all shadow-sm"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-64 pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to page 1 on search
+            }}
           />
         </div>
       </div>
@@ -164,6 +171,9 @@ export const CandidateDashboard = () => {
               });
             }
 
+            const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+            const paginatedJobs = filteredJobs.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
+
             if (filteredJobs.length === 0) {
               return (
                 <div className="col-span-full py-12 text-center text-text-secondary">
@@ -173,7 +183,9 @@ export const CandidateDashboard = () => {
               );
             }
 
-            return filteredJobs.map(job => {
+            return (
+              <>
+                  {paginatedJobs.map(job => {
               const isApplied = candidateProfile?.applications?.some(app => app.jobId === job.id);
               const isRecommended = recommendedJobIds.includes(job.id);
               
@@ -191,7 +203,13 @@ export const CandidateDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
                       <Building size={14} />
-                      <span>{job.company?.name || 'NexHire AI'}</span>
+                      {job.company?.slug ? (
+                        <Link to={`/candidate/company/${job.company.slug}`} className="hover:text-accent hover:underline font-medium transition-colors">
+                          {job.company.name}
+                        </Link>
+                      ) : (
+                        <span>{job.company?.name || 'NexHire AI'}</span>
+                      )}
                       <span className="text-border">•</span>
                       <span className="text-accent font-medium">{job.department}</span>
                     </div>
@@ -225,7 +243,32 @@ export const CandidateDashboard = () => {
                   </div>
                 </Card>
               );
-            });
+            })}
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="col-span-full flex justify-center items-center gap-4 mt-10">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm font-medium text-text-secondary">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
+            );
           })()}
         </div>
       )}
@@ -238,7 +281,16 @@ export const CandidateDashboard = () => {
               <div>
                 <h2 className="text-2xl font-bold text-primary mb-2">{selectedJob.title}</h2>
                 <div className="flex flex-wrap items-center gap-4 text-text-secondary text-sm">
-                  <span className="flex items-center gap-1"><Building size={16} /> {selectedJob.company?.name || 'NexHire AI'}</span>
+                  <span className="flex items-center gap-1">
+                    <Building size={16} /> 
+                    {selectedJob.company?.slug ? (
+                      <Link to={`/candidate/company/${selectedJob.company.slug}`} className="hover:text-accent hover:underline transition-colors">
+                        {selectedJob.company.name}
+                      </Link>
+                    ) : (
+                      selectedJob.company?.name || 'NexHire AI'
+                    )}
+                  </span>
                   <span className="flex items-center gap-1"><MapPin size={16} /> {selectedJob.location}</span>
                   <span className="text-accent font-medium px-2 py-0.5 bg-accent/10 rounded-md">{selectedJob.department}</span>
                 </div>

@@ -105,6 +105,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/candidate', candidateRoutes);
 app.use('/api/candidate/resume/pdf', require('./routes/resume-pdf'));
+app.use('/api/company', require('./routes/company'));
 app.use('/api/hr', require('./routes/hr'));
 app.use('/api/ai', aiRoutes);
 app.use('/api/internal', require('./routes/ai-internal'));

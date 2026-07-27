@@ -23,6 +23,7 @@ import { Jobs } from './pages/admin/Jobs';
 import { Candidates } from './pages/admin/Candidates';
 import { Settings } from './pages/admin/Settings';
 import { HrOnboarding } from './pages/admin/HrOnboarding';
+import { CompanyProfile } from './pages/admin/CompanyProfile';
 
 // Candidate Pages
 import { CandidateLayout } from './layouts/CandidateLayout';
@@ -32,6 +33,7 @@ import { Profile } from './pages/candidate/Profile';
 import { MyApplications } from './pages/candidate/MyApplications';
 import { Onboarding } from './pages/candidate/Onboarding';
 import { CvAnalyzer } from './pages/candidate/CvAnalyzer';
+import { CompanyDetail } from './pages/candidate/CompanyDetail';
 
 const FeatureIcon = ({ icon: Icon }) => (
   <div className="w-12 h-12 rounded-lg bg-accent-light flex items-center justify-center mb-4">
@@ -178,6 +180,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="candidates" element={<Candidates />} />
             <Route path="jobs" element={<Jobs />} />
+            <Route path="company" element={<CompanyProfile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Route>
@@ -187,6 +190,7 @@ function App() {
           <Route path="onboarding" element={<Onboarding />} />
           <Route element={<CandidateLayout />}>
             <Route index element={<CandidateDashboard />} />
+            <Route path="company/:slug" element={<CompanyDetail />} />
             <Route path="applications" element={<MyApplications />} />
             <Route path="resume-builder" element={<ResumeBuilder />} />
             <Route path="cv-analyzer" element={<CvAnalyzer />} />
