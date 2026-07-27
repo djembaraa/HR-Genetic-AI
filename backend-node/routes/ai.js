@@ -114,4 +114,105 @@ router.post('/analyze-cv', authenticateToken, requireRole('CANDIDATE'), upload.s
   }
 });
 
+// Route: POST /api/ai/generate-summary
+router.post('/generate-summary', authenticateToken, requireRole('CANDIDATE'), async (req, res) => {
+  const { profile_data } = req.body;
+  if (!profile_data) return res.status(400).json({ error: 'Profile data is required' });
+
+  try {
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+    const response = await fetch(`${AI_SERVICE_URL}/api/generate-summary`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': AI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ profile_data })
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI service returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying AI summary generation:', error.message);
+    res.status(500).json({ error: 'Failed to generate summary with AI' });
+  }
+});
+
+// Route: POST /api/ai/generate-job-description
+router.post('/generate-job-description', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
+  const { title, department, location, type } = req.body;
+  if (!title) return res.status(400).json({ error: 'Job title is required' });
+
+  try {
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+    const response = await fetch(`${AI_SERVICE_URL}/api/generate-job-description`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': AI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ title, department, location: location || '', type: type || '' })
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI service returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying AI job description generation:', error.message);
+    res.status(500).json({ error: 'Failed to generate job description with AI' });
+  }
+});
+
+// Route: POST /api/ai/extract-cv
+router.post('/extract-cv', authenticateToken, requireRole('CANDIDATE'), upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'PDF file is required' });
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const blob = new Blob([fileBuffer], { type: req.file.mimetype || 'application/pdf' });
+    const formData = new FormData();
+    formData.append('file', blob, req.file.originalname);
+
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+    const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+    const response = await fetch(`${AI_SERVICE_URL}/api/extract-cv-pdf`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': AI_API_KEY
+      },
+      body: formData
+    });
+
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`AI service returned ${response.status}: ${errText}`);
+      throw new Error(`AI service returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error proxying AI CV Extraction:', error.message);
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({ error: 'Failed to extract CV with AI' });
+  }
+});
+
 module.exports = router;

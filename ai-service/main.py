@@ -349,7 +349,9 @@ def extract_cv_pdf(file: UploadFile = File(...), api_key: str = Depends(get_api_
             "\"location\" (string), "
             "\"skills\" (array of strings), "
             "\"experiences\" (array of objects with keys: \"company\" (str), \"title\" (str), \"description\" (str), \"startDate\" (YYYY-MM or just year string), \"endDate\" (YYYY-MM or year string, null if present)), "
-            "\"educations\" (array of objects with keys: \"institution\" (str), \"degree\" (str), \"field\" (str), \"startDate\" (YYYY-MM or year), \"endDate\" (YYYY-MM or year)). "
+            "\"educations\" (array of objects with keys: \"institution\" (str), \"degree\" (str), \"field\" (str), \"startDate\" (YYYY-MM or year), \"endDate\" (YYYY-MM or year)), "
+            "\"projects\" (array of objects with keys: \"name\" (str), \"description\" (str), \"link\" (str, null if none)), "
+            "\"certifications\" (array of objects with keys: \"name\" (str), \"issuer\" (str), \"issueDate\" (YYYY-MM or year, null if none)). "
             "Do not include any markdown headers like ```json.\n\n"
             f"CV Text:\n{text[:15000]}"
         )
@@ -477,6 +479,60 @@ def recommend_jobs(
     except Exception as e:
         logger.error(f"Error recommending jobs: {e}")
         return {"recommended_job_ids": []}
+
+class SummaryRequest(BaseModel):
+    profile_data: dict
+
+@app.post("/api/generate-summary")
+def generate_summary(req: SummaryRequest, api_key: str = Depends(get_api_key)):
+    """
+    Generates a professional summary for a candidate based on their profile data (experiences, education, skills, projects).
+    """
+    try:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.5)
+        prompt = (
+            "You are an expert resume writer. Generate a professional, engaging summary (max 3-4 sentences) "
+            "for a candidate based on the following profile data. Highlight their key strengths, years of experience, "
+            "and primary domains. Do not include any formatting, just the raw text.\n\n"
+            f"Profile Data: {json.dumps(req.profile_data)}"
+        )
+        response = invoke_llm_with_retry(llm, prompt)
+        return {"generated_summary": response.content.strip()}
+    except Exception as e:
+        logger.error(f"Error generating summary: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate summary")
+
+class JobDescriptionRequest(BaseModel):
+    title: str
+    department: str
+    location: str
+    type: str
+
+@app.post("/api/generate-job-description")
+def generate_job_description(req: JobDescriptionRequest, api_key: str = Depends(get_api_key)):
+    """
+    Generates a comprehensive job description for HR.
+    """
+    try:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7)
+        prompt = (
+            "You are an expert HR Manager. Write a comprehensive, attractive job description for the following role.\n"
+            f"Title: {req.title}\n"
+            f"Department: {req.department}\n"
+            f"Location: {req.location}\n"
+            f"Type: {req.type}\n\n"
+            "Include:\n"
+            "- A brief engaging overview\n"
+            "- Key Responsibilities (bullet points)\n"
+            "- Requirements/Qualifications (bullet points)\n"
+            "Format the output strictly as plain text (no markdown formatting symbols like asterisks or hashtags, just newlines and dashes for bullets). "
+            "Keep it professional and concise."
+        )
+        response = invoke_llm_with_retry(llm, prompt)
+        return {"generated_description": response.content.strip()}
+    except Exception as e:
+        logger.error(f"Error generating job description: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate job description")
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks, Bell, Wand2 } from 'lucide-react';
+import { Briefcase, FileText, User, LogOut, Hexagon, ListChecks, Bell, Wand2, Menu, X } from 'lucide-react';
 import { Button } from '../components/Button';
 import { fetchApi } from '../lib/api';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -12,6 +12,7 @@ export const CandidateLayout = () => {
   const location = useLocation();
   const [notifications, setNotifications] = React.useState([]);
   const [showNotifications, setShowNotifications] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const notifRef = React.useRef(null);
   
   if (!token || !userStr) {
@@ -177,14 +178,63 @@ export const CandidateLayout = () => {
             </AnimatePresence>
           </div>
 
-          <span className="text-sm font-medium text-text-secondary hidden sm:inline-block border-l border-border pl-4">
+          <span className="text-sm font-medium text-text-secondary hidden md:inline-block border-l border-border pl-4">
             {user.email}
           </span>
-          <Button variant="outline" size="sm" onClick={handleLogout} className="flex gap-2 items-center">
+          <Button variant="outline" size="sm" onClick={handleLogout} className="hidden md:flex gap-2 items-center">
             <LogOut size={16} /> Logout
           </Button>
+          
+          <button 
+             className="md:hidden p-2 text-text-secondary hover:bg-background-secondary rounded-lg transition-colors"
+             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+           >
+             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+           </button>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-background border-b border-border z-40 overflow-hidden"
+          >
+            <nav className="flex flex-col p-4 gap-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path || (location.pathname.startsWith(item.path) && item.path !== '/candidate');
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      isActive
+                        ? 'bg-accent/10 text-accent'
+                        : 'text-text-secondary hover:bg-background-secondary hover:text-primary'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    {item.name}
+                  </Link>
+                );
+              })}
+              <div className="border-t border-border mt-2 pt-4 flex flex-col gap-3">
+                <div className="px-4 py-2 text-sm font-medium text-text-secondary">
+                  {user.email}
+                </div>
+                <Button variant="outline" onClick={handleLogout} className="flex gap-2 items-center justify-center w-full">
+                  <LogOut size={18} /> Logout
+                </Button>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">

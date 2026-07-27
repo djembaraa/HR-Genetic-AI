@@ -141,11 +141,19 @@ model Candidate {
   phone                String?
   location             String?
   summary              String?
+  linkedinUrl          String?
+  githubUrl            String?
+  websiteUrl           String?
+  salaryExpectation    String?
   cvFileName           String?
   vectorizationStatus  VectorizationStatus @default(PENDING)
   experiences          Experience[]
   educations           Education[]
   skills               Skill[]
+  projects             Project[]
+  certifications       Certification[]
+  languages            Language[]
+  awards               Award[]
   applications         JobApplication[]
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
@@ -170,6 +178,7 @@ model JobApplication {
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   status      ApplicationStatus @default(APPLIED)
+  interviews  Interview[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -232,4 +241,85 @@ model Skill {
   createdAt   DateTime  @default(now())
 
   @@index([candidateId])
+}
+
+// --- Structured Resume: Extended Sections ---
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  candidateId Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name        String
+  description String    @default("")
+  link        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([candidateId])
+}
+
+model Certification {
+  id             Int       @id @default(autoincrement())
+  candidateId    Int
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name           String
+  issuer         String
+  issueDate      DateTime?
+  expirationDate DateTime?
+  credentialId   String?
+  credentialUrl  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([candidateId])
+}
+
+model Language {
+  id          Int       @id @default(autoincrement())
+  candidateId Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name        String
+  proficiency String    @default("Conversational")
+  createdAt   DateTime  @default(now())
+
+  @@index([candidateId])
+}
+
+model Award {
+  id          Int       @id @default(autoincrement())
+  candidateId Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  title       String
+  issuer      String?
+  date        DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+
+  @@index([candidateId])
+}
+
+// --- Interview Scheduling ---
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Interview {
+  id               Int       @id @default(autoincrement())
+  jobApplicationId Int
+  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  scheduledAt      DateTime
+  durationMinutes  Int       @default(60)
+  meetingLink      String?
+  location         String?
+  status           InterviewStatus @default(SCHEDULED)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([jobApplicationId])
 }

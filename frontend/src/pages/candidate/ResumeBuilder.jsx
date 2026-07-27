@@ -240,6 +240,58 @@ export const ResumeBuilder = () => {
     }
   };
 
+  const handleGenerateSummary = async () => {
+    if (!profile) return;
+    
+    const toastId = toast.loading('AI is generating your professional summary...');
+    const token = localStorage.getItem('token');
+    
+    try {
+      const res = await fetchApi('/api/ai/generate-summary', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ profile_data: profile })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const summaryInput = document.getElementById('input-summary');
+        if (summaryInput) summaryInput.value = data.generated_summary;
+        toast.success('Summary generated!', { id: toastId });
+      } else {
+        toast.error('Failed to generate summary', { id: toastId });
+      }
+    } catch (error) {
+      toast.error('Error connecting to AI service', { id: toastId });
+    }
+  };
+
+  const handleSaveSummary = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const summary = document.getElementById('input-summary')?.value;
+    
+    try {
+      const res = await fetchApi('/api/candidate/profile', {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ summary })
+      });
+      if (res.ok) {
+        toast.success('Summary saved');
+        fetchProfile();
+      }
+    } catch (error) {
+      toast.error('Failed to save summary');
+    }
+  };
+
   const handleVectorize = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -322,6 +374,31 @@ export const ResumeBuilder = () => {
           <h1 className="text-3xl font-bold text-primary mb-2">Resume Builder</h1>
           <p className="text-text-secondary">Build an ATS-optimized resume directly on our platform.</p>
         </div>
+
+        {/* Professional Summary Form */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <Wand2 className="text-accent" size={24} />
+            <h2 className="text-xl font-bold text-primary">Professional Summary</h2>
+          </div>
+          
+          <form onSubmit={handleSaveSummary} className="space-y-4 mb-4">
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-sm font-medium text-primary">Summary</label>
+                <button type="button" onClick={handleGenerateSummary} className="text-xs flex items-center gap-1 text-accent hover:text-accent-hover font-medium bg-accent/10 px-2 py-1 rounded-md transition-colors">
+                  <Wand2 size={12} /> Auto-Generate
+                </button>
+              </div>
+              <textarea id="input-summary" required name="summary" rows="4" defaultValue={profile?.summary || ''} className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="A brief professional summary..."></textarea>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="flex items-center gap-2">
+                <Check size={16} /> Save Summary
+              </Button>
+            </div>
+          </form>
+        </Card>
 
         {/* Experience Form */}
         <Card>
@@ -466,11 +543,25 @@ export const ResumeBuilder = () => {
             Live Preview
             <span className="text-xs font-normal text-text-secondary px-2 py-1 bg-background border border-border rounded-md">ATS Optimized</span>
           </h3>
-          <div className="bg-gradient-to-b from-white to-background-secondary border border-border rounded-lg shadow-sm p-8 min-h-[800px] font-serif text-black relative">
+          <div className="bg-white border border-border rounded-xl shadow-md p-8 min-h-[600px] font-serif text-black relative overflow-hidden break-words max-w-full mx-auto">
             <div className="text-center mb-8 border-b border-gray-300 pb-6">
               <div className="text-2xl font-bold mb-2">{profile?.name}</div>
-              <p className="text-sm text-gray-600">{profile?.email} | {profile?.phone || 'Add Phone'} | {profile?.location || 'Add Location'}</p>
+              <p className="text-sm text-gray-600">
+                {profile?.email} | {profile?.phone || 'Add Phone'} | {profile?.location || 'Add Location'}
+                {profile?.linkedinUrl && ` | LinkedIn`}
+                {profile?.githubUrl && ` | GitHub`}
+                {profile?.websiteUrl && ` | Website`}
+              </p>
             </div>
+            
+            {profile?.summary && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-2 border-b border-gray-300 pb-1">Professional Summary</h2>
+                <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {profile.summary}
+                </p>
+              </div>
+            )}
             
             {profile?.experiences?.length > 0 && (
               <div className="mb-6">

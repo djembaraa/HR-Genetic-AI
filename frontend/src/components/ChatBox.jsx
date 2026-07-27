@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './Button';
 import { Send, Bot, User } from 'lucide-react';
 import { fetchApi } from '../lib/api';
+import ReactMarkdown from 'react-markdown';
 
 
 export const ChatBox = () => {
@@ -61,8 +62,12 @@ export const ChatBox = () => {
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-accent-light text-accent'}`}>
               {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
-            <div className={`p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-background-secondary text-primary rounded-tl-none border border-border'}`}>
-              {msg.text}
+            <div className={`p-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-background-secondary text-primary rounded-tl-none border border-border overflow-hidden [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4'}`}>
+              {msg.role === 'user' ? (
+                msg.text
+              ) : (
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              )}
             </div>
           </div>
         ))}

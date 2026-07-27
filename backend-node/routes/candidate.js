@@ -124,7 +124,11 @@ const profileSchema = z.object({
   name: z.string().min(2, "Name is required").optional(),
   phone: z.string().optional(),
   location: z.string().optional(),
-  summary: z.string().optional()
+  summary: z.string().optional(),
+  linkedinUrl: z.string().optional().nullable(),
+  githubUrl: z.string().optional().nullable(),
+  websiteUrl: z.string().optional().nullable(),
+  salaryExpectation: z.string().optional().nullable()
 });
 
 const experienceSchema = z.object({
@@ -146,6 +150,35 @@ const educationSchema = z.object({
 const skillSchema = z.object({
   name: z.string().min(1, "Skill name is required"),
   proficiency: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]).optional()
+});
+
+const projectSchema = z.object({
+  name: z.string().min(1, "Project name is required"),
+  description: z.string().optional(),
+  link: z.string().optional(),
+  startDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid start date").optional().nullable(),
+  endDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid end date").optional().nullable()
+});
+
+const certificationSchema = z.object({
+  name: z.string().min(1, "Certification name is required"),
+  issuer: z.string().min(1, "Issuer is required"),
+  issueDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid issue date").optional().nullable(),
+  expirationDate: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid expiration date").optional().nullable(),
+  credentialId: z.string().optional(),
+  credentialUrl: z.string().optional()
+});
+
+const languageSchema = z.object({
+  name: z.string().min(1, "Language name is required"),
+  proficiency: z.string().optional()
+});
+
+const awardSchema = z.object({
+  title: z.string().min(1, "Award title is required"),
+  issuer: z.string().optional(),
+  date: z.string().refine((val) => val === '' || !isNaN(Date.parse(val)), "Invalid date").optional().nullable(),
+  description: z.string().optional()
 });
 
 const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
@@ -278,6 +311,10 @@ router.get('/profile', async (req, res) => {
         experiences: { orderBy: { sortOrder: 'asc' } },
         educations: { orderBy: { sortOrder: 'asc' } },
         skills: true,
+        projects: true,
+        certifications: true,
+        languages: true,
+        awards: true,
         applications: {
           include: { job: { include: { company: true } } }
         }
@@ -296,11 +333,11 @@ router.put('/profile', async (req, res) => {
   try {
     const validated = profileSchema.safeParse(req.body);
     if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
-    const { name, phone, location, summary } = validated.data;
+    const { name, phone, location, summary, linkedinUrl, githubUrl, websiteUrl, salaryExpectation } = validated.data;
     
     const candidate = await prisma.candidate.update({
       where: { userId: req.user.userId },
-      data: { name, phone, location, summary }
+      data: { name, phone, location, summary, linkedinUrl, githubUrl, websiteUrl, salaryExpectation }
     });
     res.json(candidate);
   } catch (error) {
@@ -599,6 +636,159 @@ router.delete('/skill/:id', async (req, res) => {
     }
 
     await prisma.skill.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// --- Projects ---
+router.post('/project', async (req, res) => {
+  try {
+    const validated = projectSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { name, description, link, startDate, endDate } = validated.data;
+    
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const project = await prisma.project.create({
+      data: {
+        candidateId: candidate.id,
+        name,
+        description: description || "",
+        link: link || null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null
+      }
+    });
+    res.status(201).json(project);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add project' });
+  }
+});
+
+router.delete('/project/:id', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.project.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Project not found' });
+    await prisma.project.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// --- Certifications ---
+router.post('/certification', async (req, res) => {
+  try {
+    const validated = certificationSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { name, issuer, issueDate, expirationDate, credentialId, credentialUrl } = validated.data;
+    
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const cert = await prisma.certification.create({
+      data: {
+        candidateId: candidate.id,
+        name,
+        issuer,
+        issueDate: issueDate ? new Date(issueDate) : null,
+        expirationDate: expirationDate ? new Date(expirationDate) : null,
+        credentialId,
+        credentialUrl
+      }
+    });
+    res.status(201).json(cert);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add certification' });
+  }
+});
+
+router.delete('/certification/:id', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.certification.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Certification not found' });
+    await prisma.certification.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// --- Languages ---
+router.post('/language', async (req, res) => {
+  try {
+    const validated = languageSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { name, proficiency } = validated.data;
+    
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const lang = await prisma.language.create({
+      data: {
+        candidateId: candidate.id,
+        name,
+        proficiency: proficiency || 'Conversational'
+      }
+    });
+    res.status(201).json(lang);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add language' });
+  }
+});
+
+router.delete('/language/:id', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.language.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Language not found' });
+    await prisma.language.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// --- Awards ---
+router.post('/award', async (req, res) => {
+  try {
+    const validated = awardSchema.safeParse(req.body);
+    if (!validated.success) return res.status(400).json({ error: validated.error.errors[0].message });
+    const { title, issuer, date, description } = validated.data;
+    
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const award = await prisma.award.create({
+      data: {
+        candidateId: candidate.id,
+        title,
+        issuer,
+        date: date ? new Date(date) : null,
+        description
+      }
+    });
+    res.status(201).json(award);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add award' });
+  }
+});
+
+router.delete('/award/:id', async (req, res) => {
+  try {
+    const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
+    const existing = await prisma.award.findFirst({
+      where: { id: parseInt(req.params.id), candidateId: candidate.id }
+    });
+    if (!existing) return res.status(404).json({ error: 'Award not found' });
+    await prisma.award.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ message: 'Deleted' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete' });

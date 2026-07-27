@@ -93,6 +93,44 @@ export const Onboarding = () => {
     }
   };
 
+  const handleExtractCV = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.pdf')) {
+      toast.error('Only PDF files are supported');
+      return;
+    }
+    
+    const toastId = toast.loading('AI is reading your CV and extracting data...');
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetchApi('/api/ai/extract-cv', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.location) setLocation(data.location);
+        if (data.summary) setSummary(data.summary);
+        if (data.skills) setSkills(data.skills);
+        if (data.experiences && data.experiences.length > 0) {
+          setExperiences(data.experiences);
+        }
+        toast.success('Profile auto-filled successfully!', { id: toastId });
+      } else {
+        toast.error('Failed to extract data', { id: toastId });
+      }
+    } catch (err) {
+      toast.error('Network error during extraction', { id: toastId });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-secondary flex flex-col items-center py-12 px-4 relative overflow-hidden">
       {/* Background Decor */}
@@ -144,18 +182,19 @@ export const Onboarding = () => {
                   <p className="text-sm text-text-secondary mb-4">Where are you located and what are you looking for?</p>
                 </div>
 
-                <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 flex items-center justify-between mb-6">
+                <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 flex items-center justify-between mb-6 relative">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
                       <Sparkles className="text-accent" size={20} />
                     </div>
                     <div>
                       <h4 className="font-bold text-primary text-sm">Have a CV already?</h4>
-                      <p className="text-xs text-text-secondary">Before filling manually, check if your CV meets ATS standards!</p>
+                      <p className="text-xs text-text-secondary">Let AI auto-fill your profile to save time!</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => window.open('/candidate/cv-analyzer', '_blank')} className="border-accent text-accent hover:bg-accent hover:text-white shrink-0">
-                    Try CV Analyzer
+                  <input type="file" id="cv-upload-onboarding" accept=".pdf" className="hidden" onChange={handleExtractCV} />
+                  <Button variant="outline" size="sm" onClick={() => document.getElementById('cv-upload-onboarding').click()} className="border-accent text-accent hover:bg-accent hover:text-white shrink-0">
+                    Auto-Fill with AI
                   </Button>
                 </div>
                 

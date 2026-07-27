@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { Plus, Trash2, Edit2, Briefcase, MapPin } from 'lucide-react';
+import { Plus, Trash2, Edit2, Briefcase, MapPin, Wand2 } from 'lucide-react';
 import { Input } from '../../components/Input';
 import { fetchApi } from '../../lib/api';
-
+import toast from 'react-hot-toast';
 
 export const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -41,10 +41,10 @@ export const Jobs = () => {
     
     try {
       const url = editingJob 
-        ? `http://localhost:3000/api/jobs/${editingJob.id}`
-        : 'http://localhost:3000/api/jobs';
+        ? `/api/jobs/${editingJob.id}`
+        : '/api/jobs';
       
-      const res = await fetch(url, {
+      const res = await fetchApi(url, {
         method: editingJob ? 'PUT' : 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -77,6 +77,46 @@ export const Jobs = () => {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    const form = document.getElementById('job-form');
+    if (!form) return;
+    
+    const title = form.elements['title'].value;
+    const department = form.elements['department'].value;
+    const location = form.elements['location'].value;
+    const type = form.elements['type'].value;
+    
+    if (!title || !department) {
+      toast.error('Please fill in Title and Department first');
+      return;
+    }
+    
+    const toastId = toast.loading('AI is writing the job description...');
+    const token = localStorage.getItem('token');
+    
+    try {
+      const res = await fetchApi('/api/ai/generate-job-description', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, department, location, type })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        form.elements['description'].value = data.generated_description;
+        toast.success('Description generated!', { id: toastId });
+      } else {
+        toast.error('Failed to generate description', { id: toastId });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error connecting to AI service', { id: toastId });
     }
   };
 
@@ -137,7 +177,12 @@ export const Jobs = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-sm font-medium text-primary">Description</label>
+                <button type="button" onClick={handleGenerateDescription} className="text-xs flex items-center gap-1 text-accent hover:text-accent-hover font-medium bg-accent/10 px-2 py-1 rounded-md transition-colors">
+                  <Wand2 size={12} /> Auto-Generate
+                </button>
+              </div>
               <textarea required name="description" rows={5} className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary resize-none focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200" placeholder="Job responsibilities and requirements..."></textarea>
             </div>
             <div className="flex justify-end pt-4 gap-2">
