@@ -5,7 +5,11 @@ const router = express.Router();
 // Middleware to protect internal routes
 const requireInternalApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
-  const expectedKey = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
+  const expectedKey = process.env.AI_SERVICE_API_KEY;
+  if (!expectedKey) {
+    console.error('FATAL: AI_SERVICE_API_KEY is not set');
+    return res.status(500).json({ error: 'Internal Server Configuration Error' });
+  }
   
   if (!apiKey || apiKey !== expectedKey) {
     return res.status(401).json({ error: 'Unauthorized. Invalid API Key.' });

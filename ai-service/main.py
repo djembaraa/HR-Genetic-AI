@@ -64,7 +64,9 @@ conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
 memory = SqliteSaver(conn)
 
 NODE_API_URL = os.getenv("NODE_API_URL", "http://localhost:3000/api")
-INTERNAL_API_KEY = os.getenv("AI_SERVICE_API_KEY", "default-ai-secret-key")
+INTERNAL_API_KEY = os.getenv("AI_SERVICE_API_KEY")
+if not INTERNAL_API_KEY:
+    raise RuntimeError("FATAL: AI_SERVICE_API_KEY environment variable is not set.")
 
 @tool
 def get_candidate_list(company_id: str) -> str:
