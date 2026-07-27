@@ -556,8 +556,10 @@ def generate_job_description(req: JobDescriptionRequest, api_key: str = Depends(
             "Format the output strictly as plain text (no markdown formatting symbols like asterisks or hashtags, just newlines and dashes for bullets). "
             "Keep it professional and concise."
         )
-        response = invoke_llm_with_retry(llm, prompt)
-        return {"generated_description": response.content.strip()}
+        response_text = response.content.strip()
+        if len(response_text) < 50:
+            raise HTTPException(status_code=500, detail="AI generated an insufficient response. Please try again.")
+        return {"generated_description": response_text}
     except Exception as e:
         logger.error(f"Error generating job description: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate job description")

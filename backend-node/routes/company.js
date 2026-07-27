@@ -30,6 +30,7 @@ router.put('/profile', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RE
     try {
       await redis.del(`company:${company.slug}`);
       await redis.del('jobs:all:open');
+      await redis.del(`dashboard:company:${companyId}`);
     } catch (e) {
       console.warn('Redis del error:', e.message);
     }

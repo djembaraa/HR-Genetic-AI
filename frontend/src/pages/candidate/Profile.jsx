@@ -92,7 +92,7 @@ export const Profile = () => {
           </p>
         </div>
         
-        <Card className="md:col-span-2 p-6">
+        <div className="md:col-span-2 p-6 bg-white rounded-2xl shadow-float">
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             {message && <div className="p-3 bg-success/10 text-success rounded-md text-sm">{message}</div>}
             {error && <div className="p-3 bg-error/10 text-error rounded-md text-sm">{error}</div>}
@@ -130,7 +130,7 @@ export const Profile = () => {
               </Button>
             </div>
           </form>
-        </Card>
+        </div>
       </div>
     </div>
   );

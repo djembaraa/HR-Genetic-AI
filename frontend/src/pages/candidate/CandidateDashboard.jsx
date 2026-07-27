@@ -204,7 +204,7 @@ export const CandidateDashboard = () => {
                     <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
                       <Building size={14} />
                       {job.company?.slug ? (
-                        <Link to={`/candidate/company/${job.company.slug}`} className="hover:text-accent hover:underline font-medium transition-colors">
+                        <Link to={job.company?.slug ? `/candidate/company/${job.company.slug}` : '#'} className="hover:text-accent hover:underline font-medium transition-colors">
                           {job.company.name}
                         </Link>
                       ) : (
@@ -285,7 +285,7 @@ export const CandidateDashboard = () => {
                   <span className="flex items-center gap-1">
                     <Building size={16} /> 
                     {selectedJob.company?.slug ? (
-                      <Link to={`/candidate/company/${selectedJob.company.slug}`} className="hover:text-accent hover:underline transition-colors">
+                      <Link to={selectedJob.company?.slug ? `/candidate/company/${selectedJob.company.slug}` : '#'} className="hover:text-accent hover:underline transition-colors">
                         {selectedJob.company.name}
                       </Link>
                     ) : (

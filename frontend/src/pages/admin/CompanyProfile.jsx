@@ -94,7 +94,7 @@ export const CompanyProfile = () => {
           </p>
         </div>
         
-        <Card className="md:col-span-2 p-6">
+        <div className="md:col-span-2 p-6 bg-white rounded-2xl shadow-float">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <Input 
@@ -178,7 +178,7 @@ export const CompanyProfile = () => {
               </Button>
             </div>
           </form>
-        </Card>
+        </div>
       </div>
     </div>
   );
