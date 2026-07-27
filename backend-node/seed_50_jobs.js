@@ -25,12 +25,11 @@ const descriptions = {
 };
 
 async function main() {
-  let company = await prisma.company.findFirst();
-  if (!company) {
-    company = await prisma.company.create({
-      data: { name: 'NexHire AI', description: 'Next generation AI hiring platform' }
-    });
-  }
+  const companies = await Promise.all([
+    prisma.company.upsert({ where: { slug: 'nexhire-ai' }, create: { name: 'NexHire AI', slug: 'nexhire-ai', industry: 'Technology' }, update: {} }),
+    prisma.company.upsert({ where: { slug: 'acme-corp' }, create: { name: 'ACME Corp', slug: 'acme-corp', industry: 'Finance' }, update: {} }),
+    prisma.company.upsert({ where: { slug: 'horizon-ltd' }, create: { name: 'Horizon Ltd', slug: 'horizon-ltd', industry: 'Healthcare' }, update: {} }),
+  ]);
 
   const jobs = [];
   
@@ -47,7 +46,7 @@ async function main() {
     const title = `${prefix}${dept} ${role}`.trim();
     
     jobs.push({
-      companyId: company.id,
+      companyId: companies[i % companies.length].id,
       title: title,
       department: dept,
       location: location,

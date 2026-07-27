@@ -248,6 +248,17 @@ router.post('/admin/assign-role', authenticateToken, requireRole('ADMIN'), async
   }
 
   try {
+    const targetUser = await prisma.user.findUnique({ where: { email: targetEmail } });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+    
+    if (targetUser.companyId && targetUser.companyId !== req.user.companyId) {
+      return res.status(403).json({ error: 'Cannot modify users from another company' });
+    }
+    
+    if (companyId && parseInt(companyId) !== req.user.companyId) {
+      return res.status(403).json({ error: 'Cannot assign users to a different company' });
+    }
+
     const updatedUser = await prisma.user.update({
       where: { email: targetEmail },
       data: {

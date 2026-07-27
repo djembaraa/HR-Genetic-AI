@@ -11,6 +11,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 // Pages & Layouts
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
@@ -160,46 +162,47 @@ const LandingPage = () => (
     </section>
 
     <Footer />
-  </div>
-);
+
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <Toaster position="top-right" />
-        <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-        {/* Protected Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN', 'HR_MANAGER', 'RECRUITER']} />}>
-          <Route path="onboarding" element={<HrOnboarding />} />
-          <Route element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="candidates" element={<Candidates />} />
-            <Route path="jobs" element={<Jobs />} />
-            <Route path="company" element={<CompanyProfile />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Route>
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN', 'HR_MANAGER', 'RECRUITER']} />}>
+              <Route path="onboarding" element={<HrOnboarding />} />
+              <Route element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="candidates" element={<Candidates />} />
+                <Route path="jobs" element={<Jobs />} />
+                <Route path="company" element={<CompanyProfile />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+            </Route>
 
-        {/* Protected Candidate Routes */}
-        <Route path="/candidate" element={<ProtectedRoute allowedRoles={['CANDIDATE']} />}>
-          <Route path="onboarding" element={<Onboarding />} />
-          <Route element={<CandidateLayout />}>
-            <Route index element={<CandidateDashboard />} />
-            <Route path="company/:slug" element={<CompanyDetail />} />
-            <Route path="applications" element={<MyApplications />} />
-            <Route path="resume-builder" element={<ResumeBuilder />} />
-            <Route path="cv-analyzer" element={<CvAnalyzer />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
-        </Route>
-      </Routes>
-    </Router>
-    </QueryClientProvider>
+            {/* Protected Candidate Routes */}
+            <Route path="/candidate" element={<ProtectedRoute allowedRoles={['CANDIDATE']} />}>
+              <Route path="onboarding" element={<Onboarding />} />
+              <Route element={<CandidateLayout />}>
+                <Route index element={<CandidateDashboard />} />
+                <Route path="company/:slug" element={<CompanyDetail />} />
+                <Route path="applications" element={<MyApplications />} />
+                <Route path="resume-builder" element={<ResumeBuilder />} />
+                <Route path="cv-analyzer" element={<CvAnalyzer />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
+            </Route>
+          </Routes>
+        </Router>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -1,19 +1,15 @@
 const prisma = require('./lib/prisma');
 
 async function main() {
-  let company = await prisma.company.findFirst();
-  if (!company) {
-    company = await prisma.company.create({
-      data: {
-        name: 'NexHire AI',
-        description: 'Next generation AI hiring platform',
-      }
-    });
-  }
+  const companies = await Promise.all([
+    prisma.company.upsert({ where: { slug: 'nexhire-ai' }, create: { name: 'NexHire AI', slug: 'nexhire-ai', industry: 'Technology' }, update: {} }),
+    prisma.company.upsert({ where: { slug: 'acme-corp' }, create: { name: 'ACME Corp', slug: 'acme-corp', industry: 'Finance' }, update: {} }),
+    prisma.company.upsert({ where: { slug: 'horizon-ltd' }, create: { name: 'Horizon Ltd', slug: 'horizon-ltd', industry: 'Healthcare' }, update: {} }),
+  ]);
 
   const jobs = [
     {
-      companyId: company.id,
+      companyId: null,
       title: 'Digital Marketing Manager',
       department: 'Marketing',
       location: 'Jakarta, Indonesia (Hybrid)',
@@ -34,7 +30,7 @@ Requirements:
 - Highly creative with experience in identifying target audiences and devising digital campaigns that engage, inform and motivate`
     },
     {
-      companyId: company.id,
+      companyId: null,
       title: 'Human Resources Director',
       department: 'Human Resources',
       location: 'Bandung, Indonesia (On-site)',
@@ -56,7 +52,7 @@ Requirements:
 - Thorough knowledge of human resource management principles and best practices`
     },
     {
-      companyId: company.id,
+      companyId: null,
       title: 'Financial Analyst',
       department: 'Finance',
       location: 'Surabaya, Indonesia (Remote)',
@@ -77,7 +73,7 @@ Requirements:
 - Outstanding presentation, reporting and communication skills`
     },
     {
-      companyId: company.id,
+      companyId: null,
       title: 'Sales Executive',
       department: 'Sales',
       location: 'Bali, Indonesia (On-site)',
@@ -100,7 +96,7 @@ Requirements:
 - Thorough understanding of marketing and negotiating techniques`
     },
     {
-      companyId: company.id,
+      companyId: null,
       title: 'Operations Manager',
       department: 'Operations',
       location: 'Jakarta, Indonesia (On-site)',
@@ -125,7 +121,9 @@ Requirements:
     }
   ];
 
-  for (const job of jobs) {
+  for (let i = 0; i < jobs.length; i++) {
+    const job = jobs[i];
+    job.companyId = companies[i % companies.length].id;
     await prisma.job.create({ data: job });
   }
   console.log('Seeded diverse jobs successfully!');
