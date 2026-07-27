@@ -162,7 +162,8 @@ const LandingPage = () => (
     </section>
 
     <Footer />
-
+  </div>
+);
 
 function App() {
   return (
