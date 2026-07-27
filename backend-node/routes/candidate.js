@@ -31,11 +31,26 @@ router.post('/extract-cv', authenticateToken, requireRole('CANDIDATE'), upload.s
 
     const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
     const AI_API_KEY = process.env.AI_SERVICE_API_KEY || 'default-ai-secret-key';
-    const response = await fetch(`${AI_SERVICE_URL}/api/extract-cv-pdf`, {
-      method: 'POST',
-      headers: { 'x-api-key': AI_API_KEY },
-      body: formData
-    });
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    let response;
+    try {
+      response = await fetch(`${AI_SERVICE_URL}/api/extract-cv-pdf`, {
+        method: 'POST',
+        headers: { 'x-api-key': AI_API_KEY },
+        body: formData,
+        signal: controller.signal
+      });
+    } catch (err) {
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      if (err.name === 'AbortError') {
+        return res.status(504).json({ error: 'AI service timed out. Please try again.' });
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     if (!response.ok) throw new Error(`AI service returned ${response.status}`);
