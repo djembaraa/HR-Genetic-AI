@@ -6,3 +6,5 @@ backend-node/uploads/
 backend-node/dev.db
 backend-node/dev.db-journal
 ai-service/chroma_db/
+
+.env

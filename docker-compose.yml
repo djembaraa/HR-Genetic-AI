@@ -4,10 +4,8 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: hr_genetic_postgres
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: hr_genetic_ai
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
@@ -36,10 +34,9 @@ services:
       context: ./backend-node
       dockerfile: Dockerfile
     container_name: hr_genetic_api
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql://admin:password123@postgres:5432/hr_genetic_ai
-      - JWT_SECRET=super-secret-jwt-key
-      - JWT_REFRESH_SECRET=super-secret-jwt-refresh-key
       - AI_SERVICE_URL=http://ai-service:8000
       - REDIS_URL=redis://redis:6379
       - FRONTEND_URL=http://localhost:5173

@@ -6,39 +6,6 @@ const Redis = require('ioredis');
 const router = express.Router();
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
-// GET /api/company/:slug - Public endpoint to view company details + open jobs
-router.get('/:slug', async (req, res) => {
-  const { slug } = req.params;
-  try {
-    const cachedCompany = await redis.get(`company:${slug}`);
-    if (cachedCompany) {
-      return res.json(JSON.parse(cachedCompany));
-    }
-
-    const company = await prisma.company.findUnique({
-      where: { slug },
-      include: {
-        jobs: {
-          where: { status: 'OPEN' },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
-
-    if (!company) {
-      return res.status(404).json({ error: 'Company not found' });
-    }
-
-    // Cache the result (5 min TTL)
-    await redis.set(`company:${slug}`, JSON.stringify(company), 'EX', 300);
-
-    res.json(company);
-  } catch (error) {
-    console.error('Fetch company error:', error);
-    res.status(500).json({ error: 'Failed to fetch company details' });
-  }
-});
-
 // PUT /api/company/profile - Protected endpoint for HR to update their company profile
 router.put('/profile', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECRUITER'), async (req, res) => {
   try {
@@ -71,6 +38,39 @@ router.put('/profile', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RE
   } catch (error) {
     console.error('Update company profile error:', error);
     res.status(500).json({ error: 'Failed to update company profile' });
+  }
+});
+
+// GET /api/company/:slug - Public endpoint to view company details + open jobs
+router.get('/:slug', async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const cachedCompany = await redis.get(`company:${slug}`);
+    if (cachedCompany) {
+      return res.json(JSON.parse(cachedCompany));
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { slug },
+      include: {
+        jobs: {
+          where: { status: 'OPEN' },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Cache the result (5 min TTL)
+    await redis.set(`company:${slug}`, JSON.stringify(company), 'EX', 300);
+
+    res.json(company);
+  } catch (error) {
+    console.error('Fetch company error:', error);
+    res.status(500).json({ error: 'Failed to fetch company details' });
   }
 });
 
