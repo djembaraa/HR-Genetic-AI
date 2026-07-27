@@ -53,26 +53,17 @@ router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 
     const companyId = req.user.companyId;
     if (!companyId) return res.status(403).json({ error: 'HR user has no associated company.' });
 
-    // Fetch jobs for this company
-    const jobs = await prisma.job.findMany({
-      where: { companyId },
-      select: { id: true }
-    });
-    
-    const jobIds = jobs.map(j => j.id);
-
-    // Fetch candidates who applied to these jobs via JobApplication
     const candidates = await prisma.candidate.findMany({
       where: {
         applications: {
           some: {
-            jobId: { in: jobIds }
+            job: { companyId }
           }
         }
       },
       include: {
         applications: {
-          where: { jobId: { in: jobIds } },
+          where: { job: { companyId } },
           include: { job: true }
         }
       },
