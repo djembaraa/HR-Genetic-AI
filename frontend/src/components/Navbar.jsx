@@ -21,7 +21,7 @@ export const Navbar = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={`fixed w-full z-50 transition-all duration-300 ${
+      className={`fixed w-full z-50 font-montserrat transition-all duration-300 ${
         scrolled ? 'glass py-3' : 'bg-transparent py-5'
       }`}
     >
