@@ -3,6 +3,7 @@ const PDFDocument = require('pdfkit');
 const prisma = require('../lib/prisma');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { z } = require('zod');
+const logger = require('../lib/logger');
 
 const router = express.Router();
 
@@ -72,7 +73,7 @@ router.get('/candidates', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 
 
     res.json(candidates);
   } catch (error) {
-    console.error('Fetch Candidates Error:', error);
+    logger.error('Fetch Candidates Error', { error: error.message, stack: error.stack, userId: req.user?.userId });
     res.status(500).json({ error: 'Failed to fetch candidates' });
   }
 });
@@ -107,7 +108,7 @@ router.get('/candidates/:id', authenticateToken, requireRole('ADMIN', 'HR_MANAGE
 
     res.json(candidate);
   } catch (error) {
-    console.error('Fetch Candidate Profile Error:', error);
+    logger.error('Fetch Candidate Profile Error', { error: error.message, stack: error.stack, userId: req.user?.userId });
     res.status(500).json({ error: 'Failed to fetch candidate profile' });
   }
 });
@@ -128,7 +129,7 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
         const formData = new FormData();
         formData.append('query', query);
         formData.append('company_id', req.user.companyId || 'default');
-        formData.append('thread_id', `hr_${req.user.userId}`); // Use HR user ID as thread_id
+        formData.append('thread_id', `hr-${req.user.companyId}-${req.user.userId}`); // Use HR company + user ID as thread_id
 
         const aiResponse = await fetch(`${AI_SERVICE_URL}/api/chat`, {
             method: 'POST',
@@ -139,7 +140,7 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
         const aiResult = await aiResponse.json();
         res.json(aiResult);
     } catch (error) {
-        console.error('Chat Error:', error);
+        logger.error('HR Chat Error', { error: error.message, stack: error.stack, userId: req.user?.userId });
         res.status(500).json({ error: 'Internal Server Error connecting to AI Agent' });
     }
 });
