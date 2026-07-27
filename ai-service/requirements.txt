@@ -1,8 +1,13 @@
 fastapi
 uvicorn
 langchain
-langgraph
+langchain-core
+langchain-community
+langchain-chroma
 langchain-google-genai
+langchain-text-splitters
+langgraph
+langgraph-checkpoint-sqlite
 google-genai
 chromadb
 pypdf
@@ -10,4 +15,5 @@ python-multipart
 python-dotenv
 tenacity
 loguru
-langgraph-checkpoint-sqlite
+pydantic
+redis
