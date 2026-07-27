@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
+import { MapPin, Building, Search, Briefcase, CheckCircle2, Sparkles, X } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -17,6 +17,7 @@ export const CandidateDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [recommendedJobIds, setRecommendedJobIds] = useState([]);
   const [isAiMatching, setIsAiMatching] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -205,24 +206,72 @@ export const CandidateDashboard = () => {
                       <MapPin size={14} />
                       {job.location}
                     </div>
-                    {isApplied ? (
-                      <Button size="sm" variant="outline" disabled className="bg-accent/10 text-accent border-accent/20">
-                        Applied
-                      </Button>
-                    ) : (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleApply(job.id)}
-                        disabled={applyingJobId === job.id}
-                      >
-                        {applyingJobId === job.id ? 'Applying...' : 'Apply Now'}
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setSelectedJob(job)}>Details</Button>
+                      {isApplied ? (
+                        <Button size="sm" variant="outline" disabled className="bg-accent/10 text-accent border-accent/20">
+                          Applied
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleApply(job.id)}
+                          disabled={applyingJobId === job.id}
+                        >
+                          {applyingJobId === job.id ? 'Applying...' : 'Apply Now'}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </Card>
               );
             });
           })()}
+        </div>
+      )}
+
+      {/* Job Detail Modal */}
+      {selectedJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-background rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-border">
+            <div className="p-6 border-b border-border flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-primary mb-2">{selectedJob.title}</h2>
+                <div className="flex flex-wrap items-center gap-4 text-text-secondary text-sm">
+                  <span className="flex items-center gap-1"><Building size={16} /> {selectedJob.company?.name || 'NexHire AI'}</span>
+                  <span className="flex items-center gap-1"><MapPin size={16} /> {selectedJob.location}</span>
+                  <span className="text-accent font-medium px-2 py-0.5 bg-accent/10 rounded-md">{selectedJob.department}</span>
+                </div>
+              </div>
+              <button onClick={() => setSelectedJob(null)} className="p-2 hover:bg-background-secondary rounded-full text-text-secondary hover:text-primary transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <h3 className="text-lg font-bold text-primary mb-3">Job Description</h3>
+              <div className="text-text-secondary leading-relaxed whitespace-pre-wrap">
+                {selectedJob.description}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-border flex justify-end gap-3 bg-background-secondary">
+              <Button variant="outline" onClick={() => setSelectedJob(null)}>Close</Button>
+              {candidateProfile?.applications?.some(app => app.jobId === selectedJob.id) ? (
+                <Button disabled className="bg-accent/10 text-accent border-accent/20">Applied</Button>
+              ) : (
+                <Button 
+                  onClick={() => {
+                    handleApply(selectedJob.id);
+                    setSelectedJob(null);
+                  }}
+                  disabled={applyingJobId === selectedJob.id}
+                >
+                  Apply Now
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award, X, Check } from 'lucide-react';
+import { Plus, Trash2, Wand2, Briefcase, GraduationCap, Award, X, Check, Code, Medal, Globe, Star } from 'lucide-react';
 import { fetchApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -153,6 +153,94 @@ export const ResumeBuilder = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const addProject = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    try {
+      const res = await fetchApi('/api/candidate/project', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { e.target.reset(); fetchProfile(); }
+    } catch (error) { console.error(error); }
+  };
+  const deleteProject = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetchApi(`/api/candidate/project/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) fetchProfile();
+    } catch (error) { console.error(error); }
+  };
+  
+  const addCertification = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    try {
+      const res = await fetchApi('/api/candidate/certification', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { e.target.reset(); fetchProfile(); }
+    } catch (error) { console.error(error); }
+  };
+  const deleteCertification = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetchApi(`/api/candidate/certification/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) fetchProfile();
+    } catch (error) { console.error(error); }
+  };
+
+  const addLanguage = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    try {
+      const res = await fetchApi('/api/candidate/language', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { e.target.reset(); fetchProfile(); }
+    } catch (error) { console.error(error); }
+  };
+  const deleteLanguage = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetchApi(`/api/candidate/language/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) fetchProfile();
+    } catch (error) { console.error(error); }
+  };
+
+  const addAward = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    try {
+      const res = await fetchApi('/api/candidate/award', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) { e.target.reset(); fetchProfile(); }
+    } catch (error) { console.error(error); }
+  };
+  const deleteAward = async (id) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetchApi(`/api/candidate/award/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) fetchProfile();
+    } catch (error) { console.error(error); }
   };
 
   const handleEnhanceWithAI = async (exp) => {
@@ -534,6 +622,147 @@ export const ResumeBuilder = () => {
             ))}
           </div>
         </Card>
+
+        {/* Projects Form */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <Code className="text-accent" size={24} />
+            <h2 className="text-xl font-bold text-primary">Projects</h2>
+          </div>
+          <form onSubmit={addProject} className="space-y-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input required name="name" type="text" label="Project Name" placeholder="e.g. Resume ATS parser" />
+              <Input name="link" type="url" label="Project Link" placeholder="https://github.com/..." />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input name="startDate" type="date" label="Start Date" />
+              <Input name="endDate" type="date" label="End Date" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+              <textarea name="description" rows="3" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted" placeholder="What did you build?"></textarea>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="flex items-center gap-2"><Plus size={16} /> Add Project</Button>
+            </div>
+          </form>
+          <div className="space-y-4">
+            {profile?.projects?.map(proj => (
+              <div key={proj.id} className="p-4 border border-border rounded-lg bg-background flex flex-col gap-2 relative group">
+                <button onClick={() => deleteProject(proj.id)} className="absolute top-4 right-4 text-text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
+                <h3 className="font-bold text-primary">{proj.name}</h3>
+                {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="text-accent text-sm hover:underline">{proj.link}</a>}
+                <span className="text-xs text-text-muted">
+                  {proj.startDate ? new Date(proj.startDate).toLocaleDateString() : ''} {proj.endDate ? `- ${new Date(proj.endDate).toLocaleDateString()}` : ''}
+                </span>
+                <p className="text-sm text-primary mt-1">{proj.description}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Certifications Form */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <Medal className="text-accent" size={24} />
+            <h2 className="text-xl font-bold text-primary">Certifications</h2>
+          </div>
+          <form onSubmit={addCertification} className="space-y-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input required name="name" type="text" label="Certification Name" placeholder="e.g. AWS Certified Developer" />
+              <Input required name="issuer" type="text" label="Issuer" placeholder="e.g. Amazon Web Services" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input name="issueDate" type="date" label="Issue Date" />
+              <Input name="expirationDate" type="date" label="Expiration Date" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input name="credentialId" type="text" label="Credential ID" />
+              <Input name="credentialUrl" type="url" label="Credential URL" />
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="flex items-center gap-2"><Plus size={16} /> Add Certification</Button>
+            </div>
+          </form>
+          <div className="space-y-4">
+            {profile?.certifications?.map(cert => (
+              <div key={cert.id} className="p-4 border border-border rounded-lg bg-background flex flex-col gap-2 relative group">
+                <button onClick={() => deleteCertification(cert.id)} className="absolute top-4 right-4 text-text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
+                <h3 className="font-bold text-primary">{cert.name}</h3>
+                <span className="text-sm text-text-secondary">{cert.issuer}</span>
+                <span className="text-xs text-text-muted">
+                  Issued: {cert.issueDate ? new Date(cert.issueDate).toLocaleDateString() : 'N/A'} {cert.expirationDate ? `| Expires: ${new Date(cert.expirationDate).toLocaleDateString()}` : ''}
+                </span>
+                {cert.credentialUrl && <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="text-accent text-sm hover:underline">View Credential</a>}
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Awards Form */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <Star className="text-accent" size={24} />
+            <h2 className="text-xl font-bold text-primary">Awards & Honors</h2>
+          </div>
+          <form onSubmit={addAward} className="space-y-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input required name="title" type="text" label="Award Title" placeholder="e.g. Employee of the Year" />
+              <Input name="issuer" type="text" label="Issuer" placeholder="e.g. Google" />
+            </div>
+            <Input name="date" type="date" label="Date Received" />
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+              <textarea name="description" rows="2" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200 placeholder:text-text-muted"></textarea>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="flex items-center gap-2"><Plus size={16} /> Add Award</Button>
+            </div>
+          </form>
+          <div className="space-y-4">
+            {profile?.awards?.map(award => (
+              <div key={award.id} className="p-4 border border-border rounded-lg bg-background flex flex-col gap-2 relative group">
+                <button onClick={() => deleteAward(award.id)} className="absolute top-4 right-4 text-text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
+                <h3 className="font-bold text-primary">{award.title}</h3>
+                <span className="text-sm text-text-secondary">{award.issuer}</span>
+                {award.date && <span className="text-xs text-text-muted">{new Date(award.date).toLocaleDateString()}</span>}
+                <p className="text-sm text-primary mt-1">{award.description}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Languages Form */}
+        <Card>
+          <div className="flex items-center gap-2 mb-6">
+            <Globe className="text-accent" size={24} />
+            <h2 className="text-xl font-bold text-primary">Languages</h2>
+          </div>
+          <form onSubmit={addLanguage} className="flex gap-4 mb-8 items-end">
+            <div className="flex-1">
+              <Input required name="name" type="text" label="Language" placeholder="e.g. Spanish" />
+            </div>
+            <div className="w-48">
+              <label className="block text-sm font-medium text-primary mb-1.5">Proficiency</label>
+              <select name="proficiency" className="w-full px-4 py-2 border border-border rounded-xl bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all duration-200">
+                <option value="Basic">Basic</option>
+                <option value="Conversational">Conversational</option>
+                <option value="Fluent">Fluent</option>
+                <option value="Native">Native/Bilingual</option>
+              </select>
+            </div>
+            <Button type="submit" className="flex items-center gap-2"><Plus size={16} /> Add</Button>
+          </form>
+          <div className="flex flex-wrap gap-2">
+            {profile?.languages?.map(lang => (
+              <div key={lang.id} className="flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-full text-sm">
+                <span className="font-medium text-primary">{lang.name}</span>
+                <span className="text-xs text-text-muted">({lang.proficiency})</span>
+                <button onClick={() => deleteLanguage(lang.id)} className="text-text-muted hover:text-danger ml-1"><Trash2 size={14} /></button>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
 
       {/* Live Preview Section */}
@@ -609,6 +838,65 @@ export const ResumeBuilder = () => {
                 <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Skills</h2>
                 <div className="text-sm text-gray-800">
                   {profile.skills.map(skill => skill.name).join(', ')}
+                </div>
+              </div>
+            )}
+            
+            {profile?.projects?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Projects</h2>
+                <div className="space-y-4">
+                  {profile.projects.map(proj => (
+                    <div key={proj.id}>
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className="font-bold text-md flex items-center gap-2">
+                          {proj.name} 
+                          {proj.link && <a href={proj.link} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-normal">Link</a>}
+                        </h3>
+                        <span className="text-sm text-gray-600">
+                          {proj.startDate ? new Date(proj.startDate).toLocaleDateString(undefined, {month:'short', year:'numeric'}) : ''} {proj.endDate ? `- ${new Date(proj.endDate).toLocaleDateString(undefined, {month:'short', year:'numeric'})}` : ''}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-800 leading-relaxed">{proj.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {profile?.certifications?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Certifications</h2>
+                <ul className="list-disc list-outside ml-4 text-sm text-gray-800 space-y-1">
+                  {profile.certifications.map(cert => (
+                    <li key={cert.id}>
+                      <span className="font-bold">{cert.name}</span>, {cert.issuer} 
+                      {cert.issueDate ? ` (${new Date(cert.issueDate).toLocaleDateString(undefined, {year:'numeric'})})` : ''}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {profile?.awards?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Honors & Awards</h2>
+                <ul className="list-disc list-outside ml-4 text-sm text-gray-800 space-y-1">
+                  {profile.awards.map(award => (
+                    <li key={award.id}>
+                      <span className="font-bold">{award.title}</span> {award.issuer ? `- ${award.issuer}` : ''} 
+                      {award.date ? ` (${new Date(award.date).toLocaleDateString(undefined, {year:'numeric'})})` : ''}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {profile?.languages?.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wider mb-4 border-b border-gray-300 pb-1">Languages</h2>
+                <div className="text-sm text-gray-800">
+                  {profile.languages.map(lang => `${lang.name} (${lang.proficiency})`).join(', ')}
                 </div>
               </div>
             )}
