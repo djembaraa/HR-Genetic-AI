@@ -197,8 +197,8 @@ export const CandidateDashboard = () => {
                     </div>
                   )}
                   <div className="flex-1">
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="text-lg font-bold text-primary pr-4">{job.title}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-bold text-primary pr-4 line-clamp-1">{job.title}</h3>
                       {isApplied && <CheckCircle2 size={20} className="text-accent shrink-0" />}
                     </div>
                     <div className="flex items-center gap-2 text-text-secondary text-sm mb-4">
@@ -214,20 +214,20 @@ export const CandidateDashboard = () => {
                       <span className="text-accent font-medium">{job.department}</span>
                     </div>
                     
-                    <p className="text-text-secondary text-sm line-clamp-3 mb-6">
+                    <p className="text-text-secondary text-base leading-relaxed line-clamp-3 mb-6">
                       {job.description}
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border flex-wrap gap-4">
                     <div className="flex items-center gap-1 text-text-secondary text-sm">
                       <MapPin size={14} />
                       {job.location}
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setSelectedJob(job)}>Details</Button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button size="sm" variant="outline" onClick={() => setSelectedJob(job)} className="flex-1 sm:flex-none">Details</Button>
                       {isApplied ? (
-                        <Button size="sm" variant="outline" disabled className="bg-accent/10 text-accent border-accent/20">
+                        <Button size="sm" variant="outline" disabled className="flex-1 sm:flex-none bg-accent/10 text-accent border-accent/20">
                           Applied
                         </Button>
                       ) : (
@@ -235,6 +235,7 @@ export const CandidateDashboard = () => {
                           size="sm" 
                           onClick={() => handleApply(job.id)}
                           disabled={applyingJobId === job.id}
+                          className="flex-1 sm:flex-none"
                         >
                           {applyingJobId === job.id ? 'Applying...' : 'Apply Now'}
                         </Button>
