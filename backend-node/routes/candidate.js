@@ -8,7 +8,16 @@ const multer = require('multer');
 const fs = require('fs');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed'), false);
+    }
+    cb(null, true);
+  }
+});
 
 // --- Auto-Fill Candidate Profile from CV ---
 router.post('/extract-cv', authenticateToken, requireRole('CANDIDATE'), upload.single('file'), async (req, res) => {
