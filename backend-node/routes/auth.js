@@ -175,6 +175,7 @@ router.post('/login', authLimiter, async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
     
@@ -229,7 +230,7 @@ router.post('/logout', authLimiter, authenticateToken, async (req, res) => {
       where: { token: refreshToken },
       data: { revoked: true }
     });
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', { sameSite: 'strict' });
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     console.error('Logout Error:', error);
