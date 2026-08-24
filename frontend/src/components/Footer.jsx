@@ -45,7 +45,7 @@ export const Footer = () => {
         <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
           <p>&copy; {new Date().getFullYear()} NexHire. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <span>Made with ❤️ for HR</span>
+            <span>Made with ❤️ by Djembar Arafat</span>
           </div>
         </div>
       </div>
