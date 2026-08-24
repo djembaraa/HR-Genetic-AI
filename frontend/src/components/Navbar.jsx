@@ -31,16 +31,16 @@ export const Navbar = () => {
             <img src="/logo.jpg" alt="NexHire Logo" className="h-8 rounded" />
           </Link>
           
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#about" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Tentang Kami</a>
-            <a href="#features" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Fitur</a>
-            <a href="#contact" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Kontak Kami</a>
-            <div className="flex items-center gap-3 ml-4">
-              <Link to="/login" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Log In</Link>
-              <Link to="/signup"><Button variant="outline" className="border-brand text-brand hover:bg-brand hover:text-white">Sign Up</Button></Link>
-              <a href="#contact"><Button>Hubungi Sales</Button></a>
+            <div className="hidden md:flex items-center gap-8">
+              <Link to="/about" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">About Us</Link>
+              <a href="/#features" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Features</a>
+              <Link to="/contact" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Contact Us</Link>
+              <div className="flex items-center gap-3 ml-4">
+                <Link to="/login" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Log In</Link>
+                <Link to="/signup"><Button variant="outline" className="border-brand text-brand hover:bg-brand hover:text-white">Sign Up</Button></Link>
+                <Link to="/contact"><Button>Contact Sales</Button></Link>
+              </div>
             </div>
-          </div>
           
           <div className="md:hidden flex items-center">
             <button onClick={() => setIsOpen(!isOpen)} className="text-primary p-2">
@@ -59,9 +59,9 @@ export const Navbar = () => {
             className="md:hidden bg-white border-t border-border mt-3 shadow-lg"
           >
             <div className="px-4 pt-2 pb-6 space-y-2 flex flex-col">
-              <a href="#features" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">Fitur</a>
-              <a href="#about" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">Tentang Kami</a>
-              <a href="#contact" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">Kontak Kami</a>
+              <a href="/#features" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">Features</a>
+              <Link to="/about" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">About Us</Link>
+              <Link to="/contact" onClick={() => setIsOpen(false)} className="block px-3 py-3 text-base font-medium text-primary hover:bg-background-secondary rounded-lg">Contact Us</Link>
               <div className="border-t border-border my-2 pt-4 flex flex-col gap-3">
                 <Link to="/login" onClick={() => setIsOpen(false)}>
                   <Button variant="secondary" className="w-full">Log In</Button>

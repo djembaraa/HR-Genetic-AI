@@ -16,6 +16,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 // Pages & Layouts
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
+import { About } from './pages/About';
+import { Contact } from './pages/Contact';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Admin Pages
@@ -328,6 +330,8 @@ function App() {
           <Toaster position="top-right" />
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
 
