@@ -17,10 +17,10 @@ export default {
           hover: '#18181B', // Zinc 900
         },
         accent: {
-          DEFAULT: '#18181B', // Using almost black for a very premium minimalist feel instead of purple
-          hover: '#27272A',
-          light: '#F4F4F5',
-          muted: '#E4E4E7',
+          DEFAULT: '#0B5DFA', // Blue to match the brand
+          hover: '#094BCC',
+          light: '#E6F0FF',
+          muted: '#93C5FD',
         },
         background: {
           DEFAULT: '#FFFFFF',

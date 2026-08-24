@@ -96,9 +96,8 @@ export const CandidateLayout = () => {
       {/* Top Navbar */}
       <header className="bg-background border-b border-border h-16 flex items-center px-6 justify-between sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-8">
-          <Link to="/candidate" className="flex items-center gap-2 text-primary font-bold text-xl">
-            <Hexagon className="text-accent" fill="currentColor" size={28} />
-            PeopleC
+          <Link to="/candidate" className="flex items-center gap-2">
+            <img src="/logo.jpg" alt="NexHire Logo" className="h-8 rounded" />
           </Link>
           
           <nav className="hidden md:flex items-center gap-1">

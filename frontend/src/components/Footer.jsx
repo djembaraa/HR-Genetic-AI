@@ -7,8 +7,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="bg-brand text-white rounded-md p-1 w-8 h-8 flex items-center justify-center font-bold text-lg">P</div>
-              <span className="font-bold text-xl tracking-tight">PeopleC</span>
+              <img src="/logo.jpg" alt="NexHire Logo" className="h-8 rounded" />
             </div>
             <p className="text-gray-400 text-sm mb-6">
               Solusi HR dalam satu platform
@@ -54,7 +53,7 @@ export const Footer = () => {
         </div>
         
         <div className="text-center pt-8 text-gray-400 text-xs">
-          All Rights Reserved - Copyright Reserve by People C {new Date().getFullYear()} in Balikpapan
+          All Rights Reserved - Copyright Reserve by NexHire {new Date().getFullYear()} in Balikpapan
         </div>
       </div>
     </footer>

@@ -23,8 +23,8 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
   return (
     <div className={`w-[260px] h-screen bg-white border-r border-border fixed flex flex-col p-6 z-40 top-0 left-0 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex items-center justify-between mb-8 px-2">
-        <div className="text-2xl font-bold text-primary">
-          PeopleC
+        <div className="flex items-center gap-2">
+          <img src="/logo.jpg" alt="NexHire Logo" className="h-8 rounded" />
         </div>
         <button 
           className="md:hidden text-text-secondary hover:bg-background-secondary p-1 rounded-md"

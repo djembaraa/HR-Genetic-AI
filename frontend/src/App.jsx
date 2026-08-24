@@ -208,7 +208,7 @@ const LandingPage = () => (
         <div>
           <h2 className="text-3xl md:text-4xl font-bold text-brand mb-6">Tentang Kami</h2>
           <p className="text-gray-500 leading-relaxed mb-8 text-lg">
-            PeopleC adalah software HRIS yang dirancang untuk memudahkan manajemen sumber daya manusia dalam perusahaan Anda. Dari absensi hingga penggajian, semua bisa dikelola dengan mudah dalam satu aplikasi.
+            NexHire adalah software HRIS yang dirancang untuk memudahkan manajemen sumber daya manusia dalam perusahaan Anda. Dari absensi hingga penggajian, semua bisa dikelola dengan mudah dalam satu aplikasi.
           </p>
           <Button size="lg" className="px-8 bg-brand hover:bg-brand-hover text-white rounded-full">Hubungi Sales</Button>
         </div>
@@ -221,7 +221,7 @@ const LandingPage = () => (
         <div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Yuk Tanya Tanya</h2>
           <p className="text-blue-100 mb-12 max-w-sm text-sm">
-            Optimalkan pengelolaan operasi HR Anda dengan bantuan solusi dari PeopleC.
+            Optimalkan pengelolaan operasi HR Anda dengan bantuan solusi dari NexHire.
           </p>
           {/* Illustration placeholder */}
           <div className="w-48 h-32 bg-blue-500/20 rounded-xl border border-blue-400/30 flex items-center justify-center relative">

@@ -31,7 +31,7 @@ export const AdminLayout = () => {
           
           <div className="flex items-center gap-4 ml-auto">
             <span className="text-sm font-medium hidden sm:block">{user.name || user.email}</span>
-            <div className="w-[35px] h-[35px] rounded-full bg-primary text-white flex items-center justify-center font-bold flex-shrink-0">
+            <div className="w-[35px] h-[35px] rounded-full bg-brand text-white flex items-center justify-center font-bold flex-shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
           </div>

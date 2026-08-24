@@ -28,8 +28,7 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="bg-brand text-white rounded-md p-1 w-8 h-8 flex items-center justify-center font-bold text-lg">P</div>
-            <span className="font-bold text-xl text-primary tracking-tight">PeopleC</span>
+            <img src="/logo.jpg" alt="NexHire Logo" className="h-8 rounded" />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
