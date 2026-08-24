@@ -1,5 +1,5 @@
 import React from 'react';
-import { Instagram, Globe, Phone, Mail } from 'lucide-react';
+import { Globe, Phone, Mail } from 'lucide-react';
 
 export const Footer = () => {
   return (
@@ -14,7 +14,6 @@ export const Footer = () => {
               Solusi HR dalam satu platform
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Instagram size={16} /></a>
               <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Globe size={16} /></a>
               <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Phone size={16} /></a>
               <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Mail size={16} /></a>
