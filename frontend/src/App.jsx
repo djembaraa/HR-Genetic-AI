@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './index.css';
 import { Navbar } from './components/Navbar';
 import { Card } from './components/Card';
@@ -52,14 +52,14 @@ const LandingPage = () => (
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-5xl md:text-6xl font-extrabold text-[#09090B] leading-[1.15] tracking-tight mb-6">
-            Solusi HR dalam <br/><span className="text-brand">Satu Platform.</span>
+            HR Solutions in <br/><span className="text-brand">One Platform.</span>
           </h1>
           <p className="text-lg text-gray-500 mb-8 max-w-lg leading-relaxed">
-            Platform HRIS terintegrasi untuk Mengotomatiskan Tugas Anda Demi Mendorong Pertumbuhan Bisnis Anda.
+            Integrated HRIS platform to automate your tasks and drive business growth.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand/10 text-sm font-medium text-brand">
             <CheckCircle2 size={16} className="text-brand" />
-            HRIS SaaS Tersedia Secepatnya
+            HRIS SaaS Ready to Use
           </div>
         </motion.div>
         
@@ -103,8 +103,8 @@ const LandingPage = () => (
     {/* 2. FEATURES SECTION */}
     <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="text-center mb-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">Menawarkan</h2>
-        <h2 className="text-3xl md:text-4xl font-bold text-primary">Fitur <span className="text-brand">Terbaik</span> Kami</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">Offering Our</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary"><span className="text-brand">Best</span> Features</h2>
       </div>
       
       <div className="flex flex-col gap-6">
@@ -112,10 +112,10 @@ const LandingPage = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card padding="spacious" className="flex flex-col justify-between">
             <div>
-              <h3 className="text-2xl font-bold text-primary mb-1">Fitur Manajemen Kehadiran</h3>
+              <h3 className="text-2xl font-bold text-primary mb-1">Attendance Management</h3>
               <h3 className="text-xl font-bold text-brand mb-4">Geotagging & Geofencing</h3>
               <p className="text-gray-500 text-sm leading-relaxed mb-8">
-                Pastikan akurasi data kehadiran karyawan dengan teknologi pelacakan lokasi (geotagging). Anda juga dapat membatasi area presensi (geofencing) untuk meningkatkan kedisiplinan dan mempermudah pemantauan secara real-time.
+                Ensure employee attendance data accuracy with location tracking (geotagging) technology. You can also restrict attendance areas (geofencing) to improve discipline and facilitate real-time monitoring.
               </p>
             </div>
             <div className="w-full h-48 bg-gray-50 rounded-t-3xl border-t border-x border-gray-200 mt-auto flex justify-center pt-6 overflow-hidden relative">
@@ -141,9 +141,9 @@ const LandingPage = () => (
           
           <Card padding="spacious" className="bg-brand border-brand flex flex-col justify-between text-white">
             <div>
-              <h3 className="text-2xl font-bold mb-4">Fitur <span className="text-blue-200">Penggajian Otomatis</span></h3>
+              <h3 className="text-2xl font-bold mb-4"><span className="text-blue-200">Automated Payroll</span> Feature</h3>
               <p className="text-blue-100 text-sm leading-relaxed mb-8">
-                Sederhanakan proses penggajian yang kompleks. Sistem kami menghitung gaji, tunjangan, PPh 21, dan BPJS secara otomatis, mengurangi risiko kesalahan hitung dan memastikan pembayaran tepat waktu.
+                Simplify complex payroll processes. Our system calculates salaries, allowances, and taxes automatically, reducing the risk of miscalculation and ensuring timely payments.
               </p>
             </div>
             <div className="w-full h-48 flex justify-end items-end relative overflow-hidden">
@@ -177,9 +177,9 @@ const LandingPage = () => (
             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
               <CalendarDays size={24} />
             </div>
-            <h3 className="text-lg font-bold text-primary mb-1">Manajemen <span className="text-brand">Cuti</span></h3>
+            <h3 className="text-lg font-bold text-primary mb-1">Leave <span className="text-brand">Management</span></h3>
             <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-6">
-              Kelola semua jenis pengajuan cuti karyawan dalam satu platform yang terintegrasi. Proses pengajuan dan persetujuan menjadi lebih cepat dan transparan.
+              Manage all types of employee leave requests in one integrated platform. Faster and more transparent application and approval processes.
             </p>
             <div className="mt-auto flex gap-2">
                <div className="w-full h-8 bg-gray-50 rounded-lg flex items-center px-2 gap-2 border border-gray-100">
@@ -192,9 +192,9 @@ const LandingPage = () => (
             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
               <Users size={24} />
             </div>
-            <h3 className="text-lg font-bold text-primary mb-1">Database <span className="text-brand">Karyawan</span></h3>
+            <h3 className="text-lg font-bold text-primary mb-1">Employee <span className="text-brand">Database</span></h3>
             <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-6">
-              Akses dan kelola seluruh informasi penting karyawan secara terpusat dan aman. Mulai dari data pribadi hingga riwayat pekerjaan.
+              Access and manage all essential employee information centrally and securely, from personal data to employment history.
             </p>
             <div className="mt-auto flex flex-col gap-2">
                {[1,2].map(i => (
@@ -212,9 +212,9 @@ const LandingPage = () => (
             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
               <BarChart3 size={24} />
             </div>
-            <h3 className="text-lg font-bold text-primary mb-1">Manajemen <span className="text-brand">Performa</span></h3>
+            <h3 className="text-lg font-bold text-primary mb-1">Performance <span className="text-brand">Management</span></h3>
             <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-12">
-              Pantau, evaluasi, dan tingkatkan kinerja karyawan dengan sistem manajemen performa yang objektif dan terukur.
+              Monitor, evaluate, and improve employee performance with an objective and measurable performance management system.
             </p>
             <div className="absolute bottom-4 right-6 flex items-end gap-2">
                <div className="w-4 h-6 bg-gray-100 rounded-t-sm"></div>
@@ -265,55 +265,13 @@ const LandingPage = () => (
         </div>
 
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-brand mb-6">Tentang Kami</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-brand mb-6">About Us</h2>
           <p className="text-gray-500 leading-relaxed mb-8 text-lg">
-            NexHire adalah software HRIS yang dirancang untuk memudahkan manajemen sumber daya manusia dalam perusahaan Anda. Dari absensi hingga penggajian, semua bisa dikelola dengan mudah dalam satu aplikasi.
+            NexHire is an HRIS software designed to facilitate human resource management in your company. From attendance to payroll, everything can be easily managed in one application.
           </p>
-          <Button size="lg" className="px-8 bg-brand hover:bg-brand-hover text-white rounded-full">Hubungi Sales</Button>
-        </div>
-      </div>
-    </section>
-
-    {/* 4. CONTACT SECTION */}
-    <section id="contact" className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full mb-20">
-      <div className="bg-brand rounded-[2.5rem] p-8 md:p-12 lg:p-16 text-white grid grid-cols-1 md:grid-cols-2 gap-12 relative overflow-hidden">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Yuk Tanya Tanya</h2>
-          <p className="text-blue-100 mb-12 max-w-sm text-sm">
-            Optimalkan pengelolaan operasi HR Anda dengan bantuan solusi dari NexHire.
-          </p>
-          <div className="w-48 h-32 bg-blue-500/20 rounded-xl border border-blue-400/30 overflow-hidden relative">
-             <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&q=80" alt="Contact Us" className="w-full h-full object-cover opacity-80 mix-blend-overlay" />
-             <div className="absolute -top-4 -left-4 w-12 h-12 bg-white rounded-lg p-1 shadow-sm"><div className="w-full h-full bg-brand/20 rounded"></div></div>
-             <div className="absolute bottom-4 -right-6 w-16 h-16 bg-white rounded-lg p-1 shadow-sm"><div className="w-full h-full bg-brand/20 rounded"></div></div>
-          </div>
-        </div>
-        
-        <div>
-          <form className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <input type="text" placeholder="Nama Depan" className="w-full bg-transparent border-b border-blue-300/50 py-2 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition-colors" />
-              </div>
-              <div>
-                <input type="text" placeholder="Nama Belakang" className="w-full bg-transparent border-b border-blue-300/50 py-2 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition-colors" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <input type="email" placeholder="Email" className="w-full bg-transparent border-b border-blue-300/50 py-2 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition-colors" />
-              </div>
-              <div>
-                <input type="tel" placeholder="Nomor HP" className="w-full bg-transparent border-b border-blue-300/50 py-2 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition-colors" />
-              </div>
-            </div>
-            <div>
-              <input type="text" placeholder="Pesan" className="w-full bg-transparent border-b border-blue-300/50 py-2 text-white placeholder:text-blue-200 focus:outline-none focus:border-white transition-colors" />
-            </div>
-            <div className="pt-4">
-              <Button type="button" className="bg-white text-brand hover:bg-gray-50 rounded-full px-8 py-2.5 font-semibold">Kirim Pesan</Button>
-            </div>
-          </form>
+          <Link to="/contact">
+             <Button size="lg" className="px-8 bg-brand hover:bg-brand-hover text-white rounded-full">Contact Sales</Button>
+          </Link>
         </div>
       </div>
     </section>

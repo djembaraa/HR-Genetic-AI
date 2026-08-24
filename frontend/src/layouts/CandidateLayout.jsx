@@ -15,6 +15,37 @@ export const CandidateLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const notifRef = React.useRef(null);
   
+  const fetchNotifications = async () => {
+    if (!token) return;
+    try {
+      const res = await fetchApi('/api/notifications', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [token]);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!token || !userStr) {
     return <Navigate to="/login" replace />;
   }
@@ -36,36 +67,6 @@ export const CandidateLayout = () => {
     localStorage.removeItem('user');
     navigate('/login');
   };
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetchApi('/api/notifications', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  React.useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
-    return () => clearInterval(interval);
-  }, []);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleRead = async (id, link) => {
     try {

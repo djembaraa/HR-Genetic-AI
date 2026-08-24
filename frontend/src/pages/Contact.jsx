@@ -17,7 +17,7 @@ export const Contact = () => {
     // Simulate sending message
     setTimeout(() => {
       setLoading(false);
-      toast.success('Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.');
+      toast.success('Your message has been sent! We will contact you shortly.');
       e.target.reset();
     }, 1500);
   };
@@ -25,8 +25,8 @@ export const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-montserrat">
       <Helmet>
-        <title>Kontak Kami | NexHire</title>
-        <meta name="description" content="Hubungi tim NexHire untuk mendapatkan bantuan atau mendiskusikan kebutuhan Anda." />
+        <title>Contact Us | NexHire</title>
+        <meta name="description" content="Contact the NexHire team for help or to discuss your needs." />
       </Helmet>
       
       <Navbar />
@@ -39,9 +39,9 @@ export const Contact = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Hubungi <span className="text-brand">Kami</span></h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contact <span className="text-brand">Us</span></h1>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-              Tim kami siap membantu Anda! Silakan kirimkan pertanyaan atau permintaan demo melalui form di bawah ini.
+              Our team is ready to help! Please send your questions or demo requests via the form below.
             </p>
           </motion.div>
 
@@ -50,7 +50,7 @@ export const Contact = () => {
             {/* Contact Info */}
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">Informasi Kontak</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
                 
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
@@ -69,9 +69,9 @@ export const Contact = () => {
                       <Phone size={24} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">Telepon</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">Phone</h4>
                       <p className="text-gray-500">+62 811 1234 5678</p>
-                      <p className="text-gray-500 text-sm mt-1">Senin - Jumat (09:00 - 17:00)</p>
+                      <p className="text-gray-500 text-sm mt-1">Monday - Friday (09:00 - 17:00)</p>
                     </div>
                   </div>
 
@@ -80,9 +80,9 @@ export const Contact = () => {
                       <MapPin size={24} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">Kantor Pusat</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">Headquarters</h4>
                       <p className="text-gray-500 leading-relaxed">
-                        Gedung NexHire, Lantai 15<br />
+                        NexHire Tower, Floor 15<br />
                         Jl. Jend. Sudirman No. 123<br />
                         Jakarta Selatan, Indonesia 12190
                       </p>
@@ -94,21 +94,21 @@ export const Contact = () => {
 
             {/* Contact Form */}
             <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Kirim Pesan</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Send a Message</h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Input
-                    label="Nama Depan"
+                    label="First Name"
                     type="text"
                     required
-                    placeholder="Budi"
+                    placeholder="John"
                   />
                   <Input
-                    label="Nama Belakang"
+                    label="Last Name"
                     type="text"
                     required
-                    placeholder="Santoso"
+                    placeholder="Doe"
                   />
                 </div>
                 
@@ -117,23 +117,23 @@ export const Contact = () => {
                   icon={Mail}
                   type="email"
                   required
-                  placeholder="budi@perusahaan.com"
+                  placeholder="john@company.com"
                 />
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Pesan / Kebutuhan Anda</label>
+                  <label className="text-sm font-medium text-gray-700">Message / Inquiry</label>
                   <textarea
                     rows={4}
                     required
                     className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors resize-none"
-                    placeholder="Ceritakan tentang kebutuhan HR di perusahaan Anda..."
+                    placeholder="Tell us about your company's HR needs..."
                   ></textarea>
                 </div>
 
                 <Button type="submit" className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-xl mt-4" disabled={loading}>
-                  {loading ? 'Mengirim...' : (
+                  {loading ? 'Sending...' : (
                     <span className="flex items-center gap-2 justify-center">
-                      Kirim Pesan <Send size={18} />
+                      Send Message <Send size={18} />
                     </span>
                   )}
                 </Button>
