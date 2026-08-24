@@ -71,7 +71,7 @@ export const HrOnboarding = () => {
           <p className="text-text-secondary text-lg">Set up your employer brand to attract the best candidates.</p>
         </div>
 
-        <Card padding="spacious" glass className="shadow-float border-border/50">
+        <Card padding="spacious" className="shadow-float border-border/50 bg-white">
           <AnimatePresence mode="wait">
             
             {/* STEP 1: Company Info */}

@@ -165,7 +165,7 @@ export const Onboarding = () => {
           ))}
         </div>
 
-        <Card padding="spacious" glass className="shadow-float border-border/50">
+        <Card padding="spacious" className="shadow-float border-border/50 bg-white">
           <AnimatePresence mode="wait">
             
             {/* STEP 1: Basic Info */}
