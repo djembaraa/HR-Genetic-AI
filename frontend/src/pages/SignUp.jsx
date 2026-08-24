@@ -54,8 +54,8 @@ export const SignUp = () => {
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
       <Helmet>
-        <title>Create Account | NexHire AI</title>
-        <meta name="description" content="Join NexHire AI to accelerate your career or find the best candidates." />
+        <title>Create Account | PeopleC</title>
+        <meta name="description" content="Join PeopleC to accelerate your career or manage HR." />
       </Helmet>
       
       {/* Background Orbs */}
@@ -68,28 +68,28 @@ export const SignUp = () => {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-md"
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-primary mb-6 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-brand mb-6 transition-colors">
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
         <Card padding="spacious" glass className="shadow-float">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary tracking-tight">Create Account</h1>
-            <p className="text-text-secondary mt-2">Join NexHire AI to accelerate your career</p>
+            <p className="text-text-secondary mt-2">Join PeopleC to manage HR efficiently</p>
           </div>
 
-          <div className="flex p-1 mb-6 bg-background-primary rounded-lg border border-border">
+          <div className="flex p-1 mb-6 bg-background-secondary rounded-xl border border-border">
             <button
               type="button"
               onClick={() => setIsEmployer(false)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${!isEmployer ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isEmployer ? 'bg-brand text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
             >
               Candidate
             </button>
             <button
               type="button"
               onClick={() => setIsEmployer(true)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${isEmployer ? 'bg-primary text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isEmployer ? 'bg-brand text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}
             >
               Employer / HR
             </button>
@@ -160,7 +160,7 @@ export const SignUp = () => {
 
           <div className="mt-8 text-center text-sm text-text-secondary">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary font-bold hover:underline">
+            <Link to="/login" className="text-brand font-bold hover:underline">
               Log in
             </Link>
           </div>

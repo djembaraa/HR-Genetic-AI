@@ -28,16 +28,16 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2 group">
-            <Hexagon className="text-primary transition-transform group-hover:rotate-12 duration-300" fill="currentColor" size={28} />
-            <span className="font-bold text-xl text-primary tracking-tight">NexHire AI</span>
+            <div className="bg-brand text-white rounded-md p-1 w-8 h-8 flex items-center justify-center font-bold text-lg">P</div>
+            <span className="font-bold text-xl text-primary tracking-tight">PeopleC</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">Features</a>
-            <a href="#about" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">How it Works</a>
-            <div className="flex items-center gap-3 ml-4 border-l border-border pl-8">
-              <Link to="/login"><Button variant="ghost">Log In</Button></Link>
-              <Link to="/signup"><Button>Sign Up</Button></Link>
+            <a href="#about" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Tentang Kami</a>
+            <a href="#features" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Fitur</a>
+            <a href="#contact" className="text-sm font-medium text-text-secondary hover:text-brand transition-colors">Kontak Kami</a>
+            <div className="flex items-center gap-3 ml-4">
+              <Link to="/contact"><Button>Hubungi Sales</Button></Link>
             </div>
           </div>
           

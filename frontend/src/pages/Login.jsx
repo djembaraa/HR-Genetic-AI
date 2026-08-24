@@ -52,8 +52,8 @@ export const Login = () => {
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
       <Helmet>
-        <title>Login | NexHire AI</title>
-        <meta name="description" content="Log in to your NexHire AI account to manage your jobs or candidate profile." />
+        <title>Login | PeopleC</title>
+        <meta name="description" content="Log in to your PeopleC account to manage your jobs or candidate profile." />
       </Helmet>
       
       {/* Background Orbs */}
@@ -66,14 +66,14 @@ export const Login = () => {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-md"
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-primary mb-6 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-brand mb-6 transition-colors">
           <ArrowLeft size={16} /> Back to Home
         </Link>
         
         <Card padding="spacious" glass className="shadow-float">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary tracking-tight">Welcome Back</h1>
-            <p className="text-text-secondary mt-2">Log in to your NexHire AI account</p>
+            <p className="text-text-secondary mt-2">Log in to your PeopleC account</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -110,7 +110,7 @@ export const Login = () => {
 
           <div className="mt-8 text-center text-sm text-text-secondary">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-primary font-bold hover:underline">
+            <Link to="/signup" className="text-brand font-bold hover:underline">
               Create an account
             </Link>
           </div>

@@ -18,11 +18,11 @@ export const Button = React.forwardRef(({
   const baseStyles = 'inline-flex items-center justify-center leading-none font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none rounded-xl';
   
   const variants = {
-    primary: 'bg-primary text-white hover:bg-primary-hover focus:ring-primary shadow-sm',
-    secondary: 'bg-background text-primary border border-border hover:bg-background-secondary focus:ring-border shadow-sm',
-    accent: 'bg-accent text-white hover:bg-accent-hover focus:ring-accent shadow-sm',
-    ghost: 'bg-transparent text-text-secondary hover:bg-background-secondary hover:text-primary focus:ring-border',
-    danger: 'bg-error text-white hover:bg-red-700 focus:ring-error shadow-sm',
+    primary: 'bg-brand text-white hover:bg-brand-hover focus:ring-brand shadow-sm rounded-full',
+    secondary: 'bg-background text-primary border border-border hover:bg-background-secondary focus:ring-border shadow-sm rounded-full',
+    accent: 'bg-accent text-white hover:bg-accent-hover focus:ring-accent shadow-sm rounded-full',
+    ghost: 'bg-transparent text-text-secondary hover:bg-background-secondary hover:text-primary focus:ring-border rounded-full',
+    danger: 'bg-error text-white hover:bg-red-700 focus:ring-error shadow-sm rounded-full',
   };
 
   const sizes = {

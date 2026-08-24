@@ -208,7 +208,7 @@ export const CandidateDashboard = () => {
                           {job.company.name}
                         </Link>
                       ) : (
-                        <span>{job.company?.name || 'NexHire AI'}</span>
+                        <span>{job.company?.name || 'PeopleC'}</span>
                       )}
                       <span className="text-border">•</span>
                       <span className="text-accent font-medium">{job.department}</span>
@@ -289,7 +289,7 @@ export const CandidateDashboard = () => {
                         {selectedJob.company.name}
                       </Link>
                     ) : (
-                      selectedJob.company?.name || 'NexHire AI'
+                      selectedJob.company?.name || 'PeopleC'
                     )}
                   </span>
                   <span className="flex items-center gap-1"><MapPin size={16} /> {selectedJob.location}</span>

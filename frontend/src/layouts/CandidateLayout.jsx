@@ -98,7 +98,7 @@ export const CandidateLayout = () => {
         <div className="flex items-center gap-8">
           <Link to="/candidate" className="flex items-center gap-2 text-primary font-bold text-xl">
             <Hexagon className="text-accent" fill="currentColor" size={28} />
-            NexHire AI
+            PeopleC
           </Link>
           
           <nav className="hidden md:flex items-center gap-1">

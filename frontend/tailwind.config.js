@@ -7,6 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: {
+          DEFAULT: '#0B5DFA',
+          hover: '#094BCC',
+          light: '#E6F0FF',
+        },
         primary: {
           DEFAULT: '#09090B', // Zinc 950
           hover: '#18181B', // Zinc 900

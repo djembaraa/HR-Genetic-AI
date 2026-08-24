@@ -24,7 +24,7 @@ export const Sidebar = ({ isOpen, setIsOpen }) => {
     <div className={`w-[260px] h-screen bg-white border-r border-border fixed flex flex-col p-6 z-40 top-0 left-0 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       <div className="flex items-center justify-between mb-8 px-2">
         <div className="text-2xl font-bold text-primary">
-          NexHire AI
+          PeopleC
         </div>
         <button 
           className="md:hidden text-text-secondary hover:bg-background-secondary p-1 rounded-md"
