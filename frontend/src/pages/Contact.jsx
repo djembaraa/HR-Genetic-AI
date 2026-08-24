@@ -3,6 +3,7 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { Card } from '../components/Card';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -49,7 +50,7 @@ export const Contact = () => {
             
             {/* Contact Info */}
             <div className="space-y-8">
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+              <Card padding="spacious" className="shadow-sm border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
                 
                 <div className="space-y-6">
@@ -89,11 +90,11 @@ export const Contact = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Contact Form */}
-            <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100">
+            <Card padding="spacious" className="shadow-lg border-gray-100">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Send a Message</h3>
               
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -130,7 +131,7 @@ export const Contact = () => {
                   ></textarea>
                 </div>
 
-                <Button type="submit" className="w-full bg-brand hover:bg-brand-hover text-white py-3 rounded-xl mt-4" disabled={loading}>
+                <Button type="submit" className="w-full mt-4" disabled={loading}>
                   {loading ? 'Sending...' : (
                     <span className="flex items-center gap-2 justify-center">
                       Send Message <Send size={18} />
@@ -138,7 +139,7 @@ export const Contact = () => {
                   )}
                 </Button>
               </form>
-            </div>
+            </Card>
 
           </div>
         </div>

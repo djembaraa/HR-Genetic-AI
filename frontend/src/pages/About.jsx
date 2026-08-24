@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 import { motion } from 'framer-motion';
 import { Users, Target, Shield, Zap, TrendingUp, Globe, Award, ArrowRight } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -120,13 +122,13 @@ export const About = () => {
               { icon: TrendingUp, title: 'Empowerment Over Control', desc: 'We build tools that empower managers to lead and employees to grow, shifting HR from policing to developing talent.' },
               { icon: Award, title: 'Continuous Excellence', desc: 'We are never done improving. We actively listen to customer feedback to ship updates that actually solve real problems.' },
             ].map((value, idx) => (
-              <div key={idx} className="p-8 bg-white border border-gray-200 rounded-[2rem] hover:shadow-xl transition-all duration-300 group">
+              <Card key={idx} padding="spacious" hoverable className="group">
                 <div className="w-14 h-14 bg-blue-50 text-brand rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <value.icon size={28} />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">{value.title}</h3>
                 <p className="text-gray-500 leading-relaxed text-lg">{value.desc}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -139,8 +141,10 @@ export const About = () => {
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Leadership</h2>
                 <p className="text-gray-400 text-lg">A team of industry veterans dedicated to reshaping the landscape of human capital management.</p>
               </div>
-              <Link to="/contact" className="inline-flex items-center gap-2 text-brand font-semibold hover:text-white transition-colors">
-                Join our team <ArrowRight size={20} />
+              <Link to="/contact">
+                <Button variant="ghost" className="text-brand hover:text-white border border-brand hover:bg-brand transition-colors">
+                  Join our team <ArrowRight size={18} className="ml-2" />
+                </Button>
               </Link>
             </div>
 
@@ -175,11 +179,15 @@ export const About = () => {
                 Join over 10,000 forward-thinking companies that have chosen NexHire as their trusted HR partner.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/signup" className="px-8 py-4 bg-white text-brand font-bold rounded-full hover:bg-gray-50 transition-colors text-lg">
-                  Start for free
+                <Link to="/signup">
+                  <Button size="lg" className="w-full sm:w-auto bg-white text-brand hover:bg-gray-50 px-8 py-4">
+                    Start for free
+                  </Button>
                 </Link>
-                <Link to="/contact" className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-full hover:bg-white/10 transition-colors text-lg">
-                  Contact Sales
+                <Link to="/contact">
+                  <Button size="lg" className="w-full sm:w-auto bg-transparent border-2 border-white text-white hover:bg-white/10 px-8 py-4">
+                    Contact Sales
+                  </Button>
                 </Link>
               </div>
             </div>
