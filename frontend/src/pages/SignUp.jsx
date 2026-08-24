@@ -54,8 +54,8 @@ export const SignUp = () => {
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
       <Helmet>
-        <title>Create Account | PeopleC</title>
-        <meta name="description" content="Join PeopleC to accelerate your career or manage HR." />
+        <title>Create Account | NexHire</title>
+        <meta name="description" content="Join NexHire to accelerate your career or manage HR." />
       </Helmet>
       
       {/* Background Orbs */}
@@ -75,7 +75,7 @@ export const SignUp = () => {
         <Card padding="spacious" glass className="shadow-float">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary tracking-tight">Create Account</h1>
-            <p className="text-text-secondary mt-2">Join PeopleC to manage HR efficiently</p>
+            <p className="text-text-secondary mt-2">Join NexHire to manage HR efficiently</p>
           </div>
 
           <div className="flex p-1 mb-6 bg-background-secondary rounded-xl border border-border">

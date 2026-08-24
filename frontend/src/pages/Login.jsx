@@ -52,8 +52,8 @@ export const Login = () => {
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4 relative overflow-hidden">
       <Helmet>
-        <title>Login | PeopleC</title>
-        <meta name="description" content="Log in to your PeopleC account to manage your jobs or candidate profile." />
+        <title>Login | NexHire</title>
+        <meta name="description" content="Log in to your NexHire account to manage your jobs or candidate profile." />
       </Helmet>
       
       {/* Background Orbs */}
@@ -73,7 +73,7 @@ export const Login = () => {
         <Card padding="spacious" glass className="shadow-float">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary tracking-tight">Welcome Back</h1>
-            <p className="text-text-secondary mt-2">Log in to your PeopleC account</p>
+            <p className="text-text-secondary mt-2">Log in to your NexHire account</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">

@@ -4,7 +4,7 @@ import { Navbar } from './components/Navbar';
 import { Card } from './components/Card';
 import { Footer } from './components/Footer';
 import { Button } from './components/Button';
-import { Bot, Zap, ShieldCheck, Gauge, ArrowRight, User, FileText, CheckCircle2, Building } from 'lucide-react';
+import { Bot, Zap, ShieldCheck, Gauge, ArrowRight, User, FileText, CheckCircle2, Building, MapPin, CalendarDays, Users, BarChart3, Banknote } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -69,7 +69,7 @@ const LandingPage = () => (
         >
           {/* Main Image Placeholder */}
           <div className="w-full aspect-[4/3] bg-gray-200 rounded-[2rem] overflow-hidden relative border-8 border-white shadow-xl flex items-center justify-center">
-            <span className="text-gray-400">Image: Man & Woman at Laptop</span>
+            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80" alt="Team working" className="w-full h-full object-cover" />
           </div>
           
           {/* Floating Cards */}
@@ -116,9 +116,23 @@ const LandingPage = () => (
                 Pastikan akurasi data kehadiran karyawan dengan teknologi pelacakan lokasi (geotagging). Anda juga dapat membatasi area presensi (geofencing) untuk meningkatkan kedisiplinan dan mempermudah pemantauan secara real-time.
               </p>
             </div>
-            <div className="w-full h-48 bg-gray-100 rounded-t-3xl border-t border-x border-gray-200 mt-auto flex justify-center pt-4 overflow-hidden relative">
-              <div className="w-32 h-full bg-white rounded-t-2xl shadow-md border border-gray-200 p-2">
-                 <div className="w-full h-24 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 text-xs">Map Placeholder</div>
+            <div className="w-full h-48 bg-gray-50 rounded-t-3xl border-t border-x border-gray-200 mt-auto flex justify-center pt-6 overflow-hidden relative">
+              <div className="w-48 h-full bg-white rounded-t-2xl shadow-lg border border-gray-100 p-3 flex flex-col gap-3 relative">
+                 <div className="w-full h-24 bg-blue-50 rounded-lg flex items-center justify-center relative overflow-hidden">
+                    {/* Simulated map background lines */}
+                    <div className="absolute inset-0 opacity-10 grid grid-cols-4 grid-rows-4 gap-1 p-1">
+                      {Array.from({length: 16}).map((_, i) => <div key={i} className="border border-blue-500 rounded-sm"></div>)}
+                    </div>
+                    <div className="relative flex flex-col items-center">
+                       <MapPin className="text-brand fill-brand/20 w-8 h-8 drop-shadow-md" />
+                       <div className="w-4 h-1 bg-brand/30 rounded-full mt-1 blur-[1px]"></div>
+                    </div>
+                 </div>
+                 <div className="space-y-2">
+                    <div className="h-3 w-3/4 bg-gray-200 rounded-full"></div>
+                    <div className="h-2 w-1/2 bg-gray-100 rounded-full"></div>
+                 </div>
+                 <div className="absolute bottom-4 right-3 bg-brand/10 text-brand text-[10px] font-bold px-2 py-1 rounded-full">In Area</div>
               </div>
             </div>
           </Card>
@@ -131,10 +145,25 @@ const LandingPage = () => (
               </p>
             </div>
             <div className="w-full h-48 flex justify-end items-end relative overflow-hidden">
-               <div className="w-32 h-40 bg-white rounded-t-2xl shadow-xl p-2 relative translate-x-4">
-                  <div className="w-full h-8 bg-blue-50 rounded mb-2"></div>
-                  <div className="w-full h-4 bg-gray-100 rounded mb-1"></div>
-                  <div className="w-full h-4 bg-gray-100 rounded mb-1"></div>
+               <div className="w-48 h-44 bg-white rounded-t-2xl shadow-2xl p-4 relative translate-x-6 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                     <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center"><Banknote size={14} className="text-brand" /></div>
+                     <div>
+                        <div className="h-2 w-16 bg-gray-200 rounded-full mb-1"></div>
+                        <div className="h-2 w-10 bg-gray-100 rounded-full"></div>
+                     </div>
+                  </div>
+                  <div className="w-full h-10 bg-blue-50 rounded-lg flex items-center px-3 border border-blue-100">
+                     <div className="h-3 w-1/2 bg-brand/40 rounded-full"></div>
+                  </div>
+                  <div className="flex justify-between items-center px-1">
+                     <div className="h-2 w-12 bg-gray-200 rounded-full"></div>
+                     <div className="h-2 w-16 bg-gray-200 rounded-full"></div>
+                  </div>
+                  <div className="flex justify-between items-center px-1">
+                     <div className="h-2 w-14 bg-gray-200 rounded-full"></div>
+                     <div className="h-2 w-12 bg-gray-200 rounded-full"></div>
+                  </div>
                </div>
             </div>
           </Card>
@@ -142,28 +171,56 @@ const LandingPage = () => (
 
         {/* Bottom row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="hover:-translate-y-1 transition-transform">
+          <Card className="hover:-translate-y-1 transition-transform relative overflow-hidden flex flex-col">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
+              <CalendarDays size={24} />
+            </div>
             <h3 className="text-lg font-bold text-primary mb-1">Manajemen <span className="text-brand">Cuti</span></h3>
-            <p className="text-gray-500 text-sm leading-relaxed mt-4">
-              Kelola semua jenis pengajuan cuti karyawan dalam satu platform yang terintegrasi. Proses pengajuan dan persetujuan menjadi lebih cepat dan transparan, dengan sisa kuota cuti yang diperbarui secara otomatis.
+            <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-6">
+              Kelola semua jenis pengajuan cuti karyawan dalam satu platform yang terintegrasi. Proses pengajuan dan persetujuan menjadi lebih cepat dan transparan.
             </p>
+            <div className="mt-auto flex gap-2">
+               <div className="w-full h-8 bg-gray-50 rounded-lg flex items-center px-2 gap-2 border border-gray-100">
+                  <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center"><CheckCircle2 size={10} className="text-green-500" /></div>
+                  <div className="h-2 w-1/2 bg-gray-200 rounded-full"></div>
+               </div>
+            </div>
           </Card>
-          <Card className="hover:-translate-y-1 transition-transform">
+          <Card className="hover:-translate-y-1 transition-transform relative overflow-hidden flex flex-col">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
+              <Users size={24} />
+            </div>
             <h3 className="text-lg font-bold text-primary mb-1">Database <span className="text-brand">Karyawan</span></h3>
-            <p className="text-gray-500 text-sm leading-relaxed mt-4">
-              Akses dan kelola seluruh informasi penting karyawan secara terpusat dan aman. Mulai dari data pribadi, kontrak kerja, hingga riwayat pekerjaan dalam satu database yang mudah diakses kapan saja.
+            <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-6">
+              Akses dan kelola seluruh informasi penting karyawan secara terpusat dan aman. Mulai dari data pribadi hingga riwayat pekerjaan.
             </p>
+            <div className="mt-auto flex flex-col gap-2">
+               {[1,2].map(i => (
+                 <div key={i} className="w-full bg-gray-50 rounded-lg p-2 flex items-center gap-2 border border-gray-100">
+                    <div className="w-6 h-6 rounded-full bg-gray-200"></div>
+                    <div>
+                       <div className="h-1.5 w-16 bg-gray-300 rounded-full mb-1"></div>
+                       <div className="h-1.5 w-10 bg-gray-200 rounded-full"></div>
+                    </div>
+                 </div>
+               ))}
+            </div>
           </Card>
-          <Card className="hover:-translate-y-1 transition-transform relative overflow-hidden">
+          <Card className="hover:-translate-y-1 transition-transform relative overflow-hidden flex flex-col">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-4">
+              <BarChart3 size={24} />
+            </div>
             <h3 className="text-lg font-bold text-primary mb-1">Manajemen <span className="text-brand">Performa</span></h3>
-            <p className="text-gray-500 text-sm leading-relaxed mt-4 mb-8">
-              Pantau, evaluasi, dan tingkatkan kinerja karyawan dengan sistem manajemen performa yang objektif. Tetapkan Key Performance Indicator (KPI) dan berikan umpan balik yang membangun untuk mendukung pertumbuhan mereka.
+            <p className="text-gray-500 text-sm leading-relaxed mt-2 mb-12">
+              Pantau, evaluasi, dan tingkatkan kinerja karyawan dengan sistem manajemen performa yang objektif dan terukur.
             </p>
-            <div className="absolute bottom-4 right-4 flex items-end gap-1 opacity-50">
-               <div className="w-2 h-4 bg-gray-300 rounded-t-sm"></div>
-               <div className="w-2 h-6 bg-gray-300 rounded-t-sm"></div>
-               <div className="w-2 h-8 bg-red-400 rounded-t-sm"></div>
-               <div className="w-2 h-10 bg-brand rounded-t-sm"></div>
+            <div className="absolute bottom-4 right-6 flex items-end gap-2">
+               <div className="w-4 h-6 bg-gray-100 rounded-t-sm"></div>
+               <div className="w-4 h-10 bg-gray-200 rounded-t-sm"></div>
+               <div className="w-4 h-16 bg-blue-200 rounded-t-sm"></div>
+               <div className="w-4 h-24 bg-brand rounded-t-sm relative">
+                 <div className="absolute -top-3 -right-2 w-6 h-4 bg-green-100 rounded text-[8px] font-bold text-green-600 flex items-center justify-center">98%</div>
+               </div>
             </div>
           </Card>
         </div>
@@ -175,7 +232,7 @@ const LandingPage = () => (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="relative">
           <div className="w-full aspect-square md:aspect-[4/5] bg-gray-200 rounded-[2rem] overflow-hidden flex items-center justify-center relative">
-             <span className="text-gray-400">Image: Woman with tablet</span>
+             <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" alt="HR Professional" className="w-full h-full object-cover" />
           </div>
           
           <div className="absolute -top-4 -left-4 bg-white p-4 rounded-xl shadow-float">
@@ -223,11 +280,10 @@ const LandingPage = () => (
           <p className="text-blue-100 mb-12 max-w-sm text-sm">
             Optimalkan pengelolaan operasi HR Anda dengan bantuan solusi dari NexHire.
           </p>
-          {/* Illustration placeholder */}
-          <div className="w-48 h-32 bg-blue-500/20 rounded-xl border border-blue-400/30 flex items-center justify-center relative">
-             <span className="text-blue-200 text-xs">Illustration Placeholder</span>
-             <div className="absolute -top-4 -left-4 w-12 h-12 bg-white rounded-lg p-1"><div className="w-full h-full bg-gray-200 rounded"></div></div>
-             <div className="absolute bottom-4 -right-6 w-16 h-16 bg-white rounded-lg p-1"><div className="w-full h-full bg-gray-200 rounded"></div></div>
+          <div className="w-48 h-32 bg-blue-500/20 rounded-xl border border-blue-400/30 overflow-hidden relative">
+             <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&q=80" alt="Contact Us" className="w-full h-full object-cover opacity-80 mix-blend-overlay" />
+             <div className="absolute -top-4 -left-4 w-12 h-12 bg-white rounded-lg p-1 shadow-sm"><div className="w-full h-full bg-brand/20 rounded"></div></div>
+             <div className="absolute bottom-4 -right-6 w-16 h-16 bg-white rounded-lg p-1 shadow-sm"><div className="w-full h-full bg-brand/20 rounded"></div></div>
           </div>
         </div>
         

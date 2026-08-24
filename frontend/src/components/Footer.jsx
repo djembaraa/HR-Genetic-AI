@@ -1,4 +1,5 @@
 import React from 'react';
+import { Instagram, Globe, Phone, Mail } from 'lucide-react';
 
 export const Footer = () => {
   return (
@@ -13,11 +14,10 @@ export const Footer = () => {
               Solusi HR dalam satu platform
             </p>
             <div className="flex gap-4">
-              {/* Placeholders for social icons */}
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary"><span className="text-xs">IG</span></div>
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary"><span className="text-xs">Web</span></div>
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary"><span className="text-xs">Tel</span></div>
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary"><span className="text-xs">Mail</span></div>
+              <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Instagram size={16} /></a>
+              <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Globe size={16} /></a>
+              <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Phone size={16} /></a>
+              <a href="#" className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-primary hover:bg-brand hover:text-white transition-colors"><Mail size={16} /></a>
             </div>
           </div>
           <div>
@@ -52,8 +52,8 @@ export const Footer = () => {
           </div>
         </div>
         
-        <div className="text-center pt-8 text-gray-400 text-xs">
-          All Rights Reserved - Copyright Reserve by NexHire {new Date().getFullYear()} in Balikpapan
+        <div className="text-center pt-8 text-gray-400 text-xs border-t border-gray-800">
+          All Rights Reserved - Copyright Reserve by NexHire {new Date().getFullYear()}
         </div>
       </div>
     </footer>
