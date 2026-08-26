@@ -111,7 +111,7 @@ _llm = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _embeddings, _vectorstore, _llm
-    _embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    _embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
     _llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
     _vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=_embeddings)
     yield

@@ -356,7 +356,7 @@ router.get('/profile', async (req, res) => {
 router.put('/profile', async (req, res) => {
   try {
     const validated = profileSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { name, phone, location, summary, linkedinUrl, githubUrl, websiteUrl, salaryExpectation } = validated.data;
     
     const candidate = await prisma.candidate.update({
@@ -517,7 +517,7 @@ router.post('/apply/:jobId', async (req, res) => {
 router.post('/experience', async (req, res) => {
   try {
     const validated = experienceSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { company, title, description, startDate, endDate } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -586,7 +586,7 @@ router.delete('/experience/:id', async (req, res) => {
 router.post('/education', async (req, res) => {
   try {
     const validated = educationSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { institution, degree, field, startDate, endDate } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -630,7 +630,7 @@ router.delete('/education/:id', async (req, res) => {
 router.post('/skill', async (req, res) => {
   try {
     const validated = skillSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { name, proficiency } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -670,7 +670,7 @@ router.delete('/skill/:id', async (req, res) => {
 router.post('/project', async (req, res) => {
   try {
     const validated = projectSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { name, description, link, startDate, endDate } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -709,7 +709,7 @@ router.delete('/project/:id', async (req, res) => {
 router.post('/certification', async (req, res) => {
   try {
     const validated = certificationSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { name, issuer, issueDate, expirationDate, credentialId, credentialUrl } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -749,7 +749,7 @@ router.delete('/certification/:id', async (req, res) => {
 router.post('/language', async (req, res) => {
   try {
     const validated = languageSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { name, proficiency } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });
@@ -785,7 +785,7 @@ router.delete('/language/:id', async (req, res) => {
 router.post('/award', async (req, res) => {
   try {
     const validated = awardSchema.safeParse(req.body);
-    if (!validated.success) return res.status(400).json({ error: validated.error.issues[0].message });
+    if (!validated.success) return res.status(400).json({ error: validated.error.issues ? error.issues[0].message : error.message });
     const { title, issuer, date, description } = validated.data;
     
     const candidate = await prisma.candidate.findUnique({ where: { userId: req.user.userId } });

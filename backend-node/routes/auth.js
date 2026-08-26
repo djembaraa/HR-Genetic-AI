@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { z } = require('zod');
+const { z, ZodError } = require('zod');
 const rateLimit = require('express-rate-limit');
 
 const authLimiter = rateLimit({
@@ -81,8 +81,8 @@ router.post('/signup', authLimiter, async (req, res) => {
     res.status(201).json({ message: 'User created successfully', userId: user.id });
   } catch (error) {
     console.error('Signup Error:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.issues[0].message });
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: error.issues ? error.issues[0].message : error.message });
     }
     res.status(500).json({ error: 'Server error during signup' });
   }
@@ -131,8 +131,8 @@ router.post('/signup/employer', authLimiter, async (req, res) => {
     res.status(201).json({ message: 'Employer created successfully', userId: user.id });
   } catch (error) {
     console.error('Employer Signup Error:', error);
-    if (error instanceof z.ZodError) {
-      const msg = error.issues ? error.issues[0].message : error.message;
+    if (error instanceof ZodError) {
+      const msg = (error.issues && error.issues[0]) ? error.issues[0].message : error.message;
       return res.status(400).json({ error: msg });
     }
     res.status(500).json({ error: 'Server error during employer signup' });
@@ -183,8 +183,8 @@ router.post('/login', authLimiter, async (req, res) => {
     res.json({ token, user: { id: user.id, email: user.email, role: user.role, companyId: user.companyId } });
   } catch (error) {
     console.error('Login Error:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.issues[0].message });
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: error.issues ? error.issues[0].message : error.message });
     }
     res.status(500).json({ error: 'Server error during login' });
   }
