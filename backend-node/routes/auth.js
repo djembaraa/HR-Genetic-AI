@@ -82,7 +82,7 @@ router.post('/signup', authLimiter, async (req, res) => {
   } catch (error) {
     console.error('Signup Error:', error);
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      return res.status(400).json({ error: error.issues[0].message });
     }
     res.status(500).json({ error: 'Server error during signup' });
   }
@@ -132,7 +132,8 @@ router.post('/signup/employer', authLimiter, async (req, res) => {
   } catch (error) {
     console.error('Employer Signup Error:', error);
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      const msg = error.issues ? error.issues[0].message : error.message;
+      return res.status(400).json({ error: msg });
     }
     res.status(500).json({ error: 'Server error during employer signup' });
   }
@@ -183,7 +184,7 @@ router.post('/login', authLimiter, async (req, res) => {
   } catch (error) {
     console.error('Login Error:', error);
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors[0].message });
+      return res.status(400).json({ error: error.issues[0].message });
     }
     res.status(500).json({ error: 'Server error during login' });
   }

@@ -27,7 +27,7 @@ router.post('/company/onboard', authenticateToken, requireRole('ADMIN', 'HR_MANA
   try {
     const validated = companyOnboardSchema.safeParse(req.body);
     if (!validated.success) {
-      return res.status(400).json({ error: validated.error.errors[0].message });
+      return res.status(400).json({ error: validated.error.issues[0].message });
     }
     const { description, industry, website } = validated.data;
     
@@ -119,7 +119,7 @@ router.post('/chat', authenticateToken, requireRole('ADMIN', 'HR_MANAGER', 'RECR
     try {
         const validated = chatSchema.safeParse(req.body);
         if (!validated.success) {
-            return res.status(400).json({ error: validated.error.errors[0].message });
+            return res.status(400).json({ error: validated.error.issues[0].message });
         }
         const { query } = validated.data;
         
@@ -228,7 +228,7 @@ router.put('/applications/:id/status', authenticateToken, requireRole('ADMIN', '
   try {
     const validated = statusSchema.safeParse(req.body);
     if (!validated.success) {
-      return res.status(400).json({ error: validated.error.errors[0].message });
+      return res.status(400).json({ error: validated.error.issues[0].message });
     }
     
     const { status } = validated.data;
