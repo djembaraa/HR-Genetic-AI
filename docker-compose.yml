@@ -18,8 +18,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: hr_genetic_redis
-    expose:
-      - "6379"
+    ports:
+      - "6379:6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
